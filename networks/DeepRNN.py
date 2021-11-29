@@ -12,8 +12,8 @@ class DRNN(nn.Module):
         self.L2 = nn.Linear(64,64,bias=True)
         self.L3 = nn.Linear(64,64,bias=True)
         self.L4 = nn.Linear(64,64,bias=True)
-        # self.LSTM5 = nn.LSTM(64,64,bias=True)
-        # self.LSTM6 = nn.LSTM(64,64, bias=True)
+        self.LSTM5 = nn.LSTM(64,64,bias=True, batch_first = True)
+        self.LSTM6 = nn.LSTM(64,64, bias=True, batch_first = True)
         self.L7 = nn.Linear(64, 3)
         # self.seq = nn.Sequential(nn.Linear(1,1),nn.Sigmoid())
     

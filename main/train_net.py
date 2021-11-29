@@ -23,8 +23,8 @@ optimizer = optim.SGD(model.parameters(), lr=0.1)
 
 for epoch in range(100):
     for x,y in zip(dataset.x, dataset.y):
+        optimizer.zero_grad()
         yhat = model(x)
         loss = criteria(yhat, y)
-        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
