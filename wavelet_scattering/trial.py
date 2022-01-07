@@ -1,0 +1,1 @@
+from kymatio.torch import Scattering1D

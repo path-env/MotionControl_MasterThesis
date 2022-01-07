@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "MotionControl_MasterThesis",
+			"path": "../../../../home/mangaldeep/workspace/MotionControl_MasterThesis"
+		}
+	],
+	"settings": {
+		"python.pythonPath": "/usr/bin/python3",
+		"python.autoComplete.extraPaths": [
+			".."
+		],
+		"python.analysis.extraPaths": [
+			".."
+		]
+	}
+}
