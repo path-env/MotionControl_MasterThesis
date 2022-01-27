@@ -1,10 +1,15 @@
 {
     "python.pythonPath": "/usr/bin/python3",
     
-    "python.autoComplete.extraPaths": ["/home/mangaldeep/workspace/SLAM_ResearchThesis",
+    "python.autoComplete.extraPaths": ["/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis",
     "/home/mangaldeep/carla-ros-bridge/catkin_ws/devel/lib/python3/dist-packages",
     "/opt/ros/noetic/lib/python3/dist-packages"],
     "editor.autoClosingQuotes": "always",
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "python.analysis.extraPaths": [
+        "/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis",
+        "/home/mangaldeep/carla-ros-bridge/catkin_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
 
 }
