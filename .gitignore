@@ -1,3 +1,7 @@
 # List of untracked files to ignore
 runs/
 resources/project/
+data/__pycache__/
+models/__pycache__/
+main/data_shredder/__pycache__/
+main/__pycache__/
