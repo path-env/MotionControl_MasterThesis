@@ -8,7 +8,7 @@ import torch.utils.data as Data
 import torch.nn.functional as F
 from sklearn.metrics import roc_auc_score,accuracy_score,classification_report
 
-from BCI_functions import *  # BCI_functions.ipynb contains some functions we might use multiple times in this tutorial
+from libs.BCI_functions import *  # BCI_functions.ipynb contains some functions we might use multiple times in this tutorial
 import warnings
 warnings.filterwarnings('ignore')
 
