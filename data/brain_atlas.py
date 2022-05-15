@@ -42,7 +42,11 @@ CL_Channels= [ 'C5',
  'Fc5',
  'Fc3',
  'Fc1',
- 'Fcz'
+ 'Fcz',
+ 'Cp5',
+ 'Cp3',
+ 'Cp1',
+ 'Cpz'
   ]
 
 CR_Channels= ['Cz',
@@ -52,7 +56,11 @@ CR_Channels= ['Cz',
  'Fcz',
  'Fc2',
  'Fc4',
- 'Fc6'
+ 'Fc6',
+ 'Cpz',
+ 'Cp2',
+ 'Cp4',
+ 'Cp6'
  ]
 
 PL_Channels = ['P7',
@@ -102,12 +110,17 @@ TL_Channels = ['Ft7',
 TR_Channels = ['Ft8',
 'T8','Tp8']
 
-refchannels = ['T9', 'T10','Iz']
+refchannels = ['T9',
+ 'T10',
+ 'Iz',
+ 'Fp1',# for EOG Projection/ ICA reference
+ 'Fp2',# for EOG Projection/ ICA reference
+ 'Fpz']# for EOG Projection/ ICA reference
 
 #%%
-F_Channels = list(set(FL_Channels + FR_Channels))
-C_Channels = list(set(CL_Channels + CR_Channels))
-P_Channels = list(set(PL_Channels + PR_Channels))
-T_Channels = list(set(TL_Channels + TR_Channels))
+F_Channels = list(set(FL_Channels + FR_Channels + refchannels))
+C_Channels = list(set(CL_Channels + CR_Channels + refchannels))
+P_Channels = list(set(PL_Channels + PR_Channels + refchannels))
+T_Channels = list(set(TL_Channels + TR_Channels + refchannels))
 
 # %%
