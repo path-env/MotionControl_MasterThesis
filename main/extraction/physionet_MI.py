@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis')
-os.getcwd()
+
 
 # %%
 
@@ -32,11 +32,11 @@ import mne
 #     Annotataions:
 #         T0 corresponds to rest
 #         T1 corresponds to onset of motion (real or imagined) of
-#             the left fist (in runs 3, 4, 7, 8, 11, and 12)
-#             both fists (in runs 5, 6, 9, 10, 13, and 14)
+#             the left fist (in runs 3, 4, 7, 8, 11, 12)
+#             both fists (in runs 5, 6, 9, 10, 13, 14)
 #         T2 corresponds to onset of motion (real or imagined) of
-#             the right fist (in runs 3, 4, 7, 8, 11, and 12)
-#             both feet (in runs 5, 6, 9, 10, 13, and 14)
+#             the right fist (in runs 3, 4, 7, 8, 11, 12)
+#             both feet (in runs 5, 6, 9, 10, 13, 14)
 #     '''
 
 # %%
@@ -47,20 +47,21 @@ T2 - Right = Take Right
 T1 - Fist = Brake
 T2 - Feet = Accelerate
 '''
-def extract():
+def extract(runs, person_id):
     # %%
-    runs = list(range(1,15))
+    # runs = list(range(1,15))
     fistLR_openclose = [1,2,3,4,7,8,11,12]
     fist_feet_openclose = [1,2,5,6,9,10,13,14]
-    person_id = 5
+    # person_id = 5
     # path2 = '/media/mangaldeep/HDD3/DataSets/Physionet'
     path = '/media/mangaldeep/HDD3/DataSets/mne_data'
     fname = mne.datasets.eegbci.load_data(person_id, runs, path=path)
 
     # %%
-    run_id = 3
-    raw = mne.io.read_raw_edf(fname[run_id], preload=True, verbose=False)
-
+    # runs = [3, 4, 7, 8, 11,12]
+    raw = [mne.io.read_raw_edf(fname[i], preload=True, verbose=False) for i,_ in enumerate(runs)]
+    # raw = mne.io.read_raw_edf(fname[run_id], preload=True, verbose=False)
+    raw = mne.concatenate_raws(raw)
     # %% [markdown]
     # #### Channel Name Modification
 
@@ -91,9 +92,12 @@ def extract():
 
     # Sphere not oriented with 10-20 system
     # raw.plot_sensors(kind = '3d', sphere=(0.0, 0.015, 0.033, 0.1));
+    # %%
     return raw
 
 
 if __name__== "__main__":
-    raw = extract()
+    runs = [3, 4, 7, 8, 11,12]
+    person_id = 1
+    raw = extract(runs, person_id)
     print(raw)
