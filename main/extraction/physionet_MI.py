@@ -47,12 +47,13 @@ T2 - Right = Take Right
 T1 - Fist = Brake
 T2 - Feet = Accelerate
 '''
-def extract(runs, person_id):
+def extractPhysionet(runs = [3], person_id = 3):
     # %%
     # runs = list(range(1,15))
+    # runs = [3]#, 4, 7, 8, 11, 12]
+    # runs = [6, 10, 14] 
     fistLR_openclose = [1,2,3,4,7,8,11,12]
     fist_feet_openclose = [1,2,5,6,9,10,13,14]
-    # person_id = 5
     # path2 = '/media/mangaldeep/HDD3/DataSets/Physionet'
     path = '/media/mangaldeep/HDD3/DataSets/mne_data'
     fname = mne.datasets.eegbci.load_data(person_id, runs, path=path)
@@ -97,7 +98,7 @@ def extract(runs, person_id):
 
 
 if __name__== "__main__":
-    runs = [3, 4, 7, 8, 11,12]
-    person_id = 1
-    raw = extract(runs, person_id)
+    # runs = [3, 4, 7, 8, 11,12]
+    # person_id = 1
+    raw = extractPhysionet()
     print(raw)

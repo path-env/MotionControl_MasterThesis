@@ -53,3 +53,7 @@ ddd/Screenshot from 2022-05-04 10-40-12.png
 ddd/Screenshot from 2022-05-04 10-40-59.png
 main/extraction/.ignore_clipboard
 main/feature_extraction/trial.ipynb
+main/preproc/__pycache__/preproc.cpython-38.pyc
+main/extraction/__pycache__/physionet_MI.cpython-38.pyc
+main/extraction/__pycache__/physionet_MI.cpython-38.pyc
+main/extraction/__pycache__/physionet_MI.cpython-38.pyc

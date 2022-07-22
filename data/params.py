@@ -10,3 +10,18 @@ class NeuroTechNetParams():
         self.hidden2 = 1000 # Number of neurons in our second hidden layer
         self.hidden3 = 100 # Number of neurons in our third hidden layer
         self.output = 10 # Number of neurons in our output layer
+
+#%% Physionet Params
+class PhysionetParams():
+    def __init__(self) -> None:
+        self.elec_lines_f = 60 #HZ
+        self.ssp_n_eeg = 2 # No . of EEG SSP components
+        self.ica_n_comp = 20
+        self.event_dict = dict({'T1':2, 'T2':3}) 
+        self.tmin, self.tmax =-2, 4
+
+#%% Analysis configuration Partameters
+class globalTrial():
+    def __init__(self) -> None:
+        self.delta,self.theta,self.alpha,self.beta,self.gamma = [0,3],[3,6],[6,12],[12,25],[25,50]
+        self.mu_rhythm, self.beta_rhythm = [7,13], [13,30]
