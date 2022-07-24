@@ -18,7 +18,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #Local Imports
-from main.extraction.physionet_MI import  extractPhysionet
+# from main.extraction.physionet_MI import  extractPhysionet, extractBCI3
 from data import brain_atlas  as bm
 
 #%%
@@ -32,11 +32,11 @@ class Preproc():
 
         # Channel names to Indices
         ch_names = raw.ch_names
-        pick_ch_idx = [ch_names.index(i) for i in pick_ch]
+        self.pick_ch_idx = [ch_names.index(i) for i in pick_ch]
 
         # Duplicate params
         self.scale = dict(mag=1e-12, grad=4e-11, eeg=100e-6)
-        mne_plot_raw = dict(scalings=self.scale, clipping='transparent', order=pick_ch_idx)
+        mne_plot_raw = dict(scalings=self.scale, clipping='transparent', order=self.pick_ch_idx)
 
         # %%
         self.plot_enable = 0
@@ -55,7 +55,7 @@ class Preproc():
         # %%
         ## Analysis after Spectral filter
         if self.plot_enable ==1:
-            rawfltrd.plot(scalings=self.scale, clipping='transparent'); #, order=pick_ch_idx
+            rawfltrd.plot(scalings=self.scale, clipping='transparent'); #, order=self.pick_ch_idx
             # rawfltrd.plot(scalings='auto');
             # rawfltrd.plot_psd_topo(show = True);
             # rawfltrd.plot_sensors(show_names=True,kind = '3d', sphere=(0.0, 0.015, 0.033, 0.1));
@@ -72,7 +72,7 @@ class Preproc():
     def run(self, method, data_cfg, run, patient_id):
         rawfltrd = self.rawfltrd.copy()
         if method.find('ssp')!=-1:
-            eog_proj, events = mne.preprocessing.compute_proj_eog(rawfltrd, n_grad=0, n_mag=0, n_eeg=data_cfg.ssp_n_eeg, average=True, verbose=False, ch_name = 'Fpz', reject=None) # returns EOG Proj and events of blinks
+            eog_proj, events = mne.preprocessing.compute_proj_eog(rawfltrd, n_grad=0, n_mag=0, n_eeg=data_cfg.ssp_n_eeg, average=True, verbose=False, ch_name =['Fpz','Fp1','Fp2'], reject=None) # returns EOG Proj and events of blinks
             rawfltrd.add_proj(projs=eog_proj);
 
         # ##### Common Average Reference(CAR) (Projector)
@@ -85,8 +85,8 @@ class Preproc():
                 # rawfltrd_car.info['projs']
                 # Compare after and before projection
                 # rawfltrd.plot(scalings=self.scale, clipping='transparent', order=pick_ch_idx);
-                rawfltrd.plot(scalings=self.scale, clipping='transparent', butterfly= False, title='Raw Filtered (Without Projection))', proj= False, order=pick_ch_idx);
-                rawfltrd.plot(scalings=self.scale, clipping='transparent', butterfly= False, title='Raw Filtered(With Projection)', proj= True, order=pick_ch_idx);
+                rawfltrd.plot(scalings=self.scale, clipping='transparent', butterfly= False, title='Raw Filtered (Without Projection))', proj= False, order=self.pick_ch_idx);
+                rawfltrd.plot(scalings=self.scale, clipping='transparent', butterfly= False, title='Raw Filtered(With Projection)', proj= True, order=self.pick_ch_idx);
 
             # rawfltrd_proj = rawfltrd_car.apply_proj()
 
@@ -102,7 +102,7 @@ class Preproc():
             # n_components  = 10 then ica.exclude = [1,2]
             ica.exclude = []
             # Using EOG Channel to select ICA Components
-            ica.exclude , ex_scores = ica.find_bads_eog(rawfltrd, ch_name=['Fpz']);#,threshold=2);
+            ica.exclude , ex_scores = ica.find_bads_eog(rawfltrd, ch_name=['Fpz','Fp1','Fp2']);#,threshold=2);
 
             # %%
             ## TODO: ICA template matching for Multiple subjects
@@ -146,7 +146,6 @@ class Preproc():
         # ### Create Epcohs from events
         ## TODO: Choose between rawfltrd/ rawfltrd_proj/ rawfltrd_ica
         # Capture events from annotations
-
         event_data = mne.events_from_annotations(rawfltrd)
         event_marker, event_ids = event_data
         event_ids = data_cfg.event_dict# Replacing the existing event ids
@@ -176,7 +175,7 @@ class Preproc():
         noise_cov = mne.compute_covariance(epochs, tmax=0., method='shrunk', rank=None, verbose='error')
         if self.plot_enable==1:                                   
             T1.plot_white(noise_cov=noise_cov); # step of scaling the whitened plots to show how well the assumption of Gaussian noise is satisfied by the data
-        epochs.save(f'main/preproc/Physionet_{method}_{run}_P{patient_id}_epo.fif', overwrite= True)
+        epochs.save(f'main/preproc/BCI3_{method}_{run}_P{patient_id}_epo.fif', overwrite= True)
 
 
 # %% [markdown]

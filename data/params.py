@@ -14,11 +14,21 @@ class NeuroTechNetParams():
 #%% Physionet Params
 class PhysionetParams():
     def __init__(self) -> None:
+        self.name ='Physionet'
         self.elec_lines_f = 60 #HZ
         self.ssp_n_eeg = 2 # No . of EEG SSP components
         self.ica_n_comp = 20
         self.event_dict = dict({'T1':2, 'T2':3}) 
         self.tmin, self.tmax =-2, 4
+
+class BCI3Params():
+    def __init__(self) -> None:
+        self.name ='BCI3'
+        self.elec_lines_f = 60 #HZ
+        self.ssp_n_eeg = 2 # No . of EEG SSP components
+        self.ica_n_comp = 20
+        self.event_dict = dict(right = -1, foot = 1, test = 0)
+        self.tmin, self.tmax =-0.5, 1
 
 #%% Analysis configuration Partameters
 class globalTrial():

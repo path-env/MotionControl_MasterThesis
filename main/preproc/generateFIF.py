@@ -1,7 +1,7 @@
 import sys
 sys.path.append('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis')
 
-from main.extraction.physionet_MI import extractPhysionet
+from main.extraction.physionet_MI import extractPhysionet, extractBCI3
 from main.preproc.preproc import Preproc
 from data.params import PhysionetParams, globalTrial
 
@@ -11,7 +11,7 @@ analy_cfg = globalTrial()
 #1, Data Extractor
 runs = [3]
 person_id = 3
-raw = extractPhysionet(runs , person_id)
+raw = extractBCI3(runs , person_id)
 
 # %%
 #2, Generate FiFs
