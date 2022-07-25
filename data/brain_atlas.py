@@ -110,9 +110,9 @@ TL_Channels = ['Ft7',
 TR_Channels = ['Ft8',
 'T8','Tp8']
 
-refchannels = ['T9',
- 'T10',
- 'Iz',
+refchannels = [#'T9',
+#  'T10',
+#  'Iz',
  'Fp1',# for EOG Projection/ ICA reference
  'Fp2',# for EOG Projection/ ICA reference
  'Fpz']# for EOG Projection/ ICA reference

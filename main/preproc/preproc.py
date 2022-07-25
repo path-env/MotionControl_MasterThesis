@@ -155,7 +155,7 @@ class Preproc():
 
         # Evoked data
         # T0 = epochs['T0'].average() # Shape = chan x timepnts
-        T1 = epochs['T1'].average()
+        # T1 = epochs['T1'].average()
         # T2 = epochs['T2'].average()
 
         # %%
@@ -175,7 +175,7 @@ class Preproc():
         noise_cov = mne.compute_covariance(epochs, tmax=0., method='shrunk', rank=None, verbose='error')
         if self.plot_enable==1:                                   
             T1.plot_white(noise_cov=noise_cov); # step of scaling the whitened plots to show how well the assumption of Gaussian noise is satisfied by the data
-        epochs.save(f'main/preproc/BCI3_{method}_{run}_P{patient_id}_epo.fif', overwrite= True)
+        epochs.save(f'main/preproc/{data_cfg.name}_{method}_{run}_P{patient_id}_epo.fif', overwrite= True)
 
 
 # %% [markdown]

@@ -1,11 +1,12 @@
 import sys
 sys.path.append('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis')
 
-from main.extraction.physionet_MI import extractPhysionet, extractBCI3
+from main.extraction.physionet_MI import extractPhysionet
+from main.extraction.bci3_IVa import extractBCI3
 from main.preproc.preproc import Preproc
-from data.params import PhysionetParams, globalTrial
+from data.params import PhysionetParams, globalTrial, BCI3Params
 
-data_cfg = PhysionetParams()
+data_cfg = BCI3Params()
 analy_cfg = globalTrial()
 # %%
 #1, Data Extractor
