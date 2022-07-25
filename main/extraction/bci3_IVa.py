@@ -47,14 +47,14 @@ def extractBCI3(runs = 0, person_id = [0]):
     nevents = len(event_onsets)
 
     # Print some information
-    print('Shape of EEG:', EEGdata.shape)
-    print('Sample rate:', sfreq)
-    print('Number of channels:', nchannels)
-    print('Channel names:', chan_names)
-    print('Number of events:', len(event_onsets))
-    print('Event codes:', np.unique(event_codes))
-    print('Class labels:', cl_lab)
-    print('Number of classes:', nclasses)
+    # print('Shape of EEG:', EEGdata.shape)
+    # print('Sample rate:', sfreq)
+    # print('Number of channels:', nchannels)
+    # print('Channel names:', chan_names)
+    # print('Number of events:', len(event_onsets))
+    # print('Event codes:', np.unique(event_codes))
+    # print('Class labels:', cl_lab)
+    # print('Number of classes:', nclasses)
 
     # %%
     # Dictionary to store the trials in, each class gets an entry
@@ -80,8 +80,8 @@ def extractBCI3(runs = 0, person_id = [0]):
             trials[cl][:,:,i] = EEGdata[:, win+onset]
             
     # the dimensionality of the data (channels x time x trials)
-    print('Shape of trials[cl1]:', trials[cl1].shape)
-    print('Shape of trials[cl2]:', trials[cl2].shape)
+    # print('Shape of trials[cl1]:', trials[cl1].shape)
+    # print('Shape of trials[cl2]:', trials[cl2].shape)
     # print('Shape of trials[00]:', trials[0].shape)
 
     # %%
@@ -94,7 +94,7 @@ def extractBCI3(runs = 0, person_id = [0]):
     Y = np.concatenate([-np.ones(right_hand.shape[0]),
                         np.ones(foot.shape[0]),
                         np.zeros(test.shape[0])])
-    data.shape
+    # data.shape
 
     # %%
     # Initialize an info structure
@@ -103,7 +103,7 @@ def extractBCI3(runs = 0, person_id = [0]):
             ch_types = ['eeg']*nchannels,
             sfreq    = sfreq )  
     # info.set_montage('standard_1020')
-    print('Event created :', info)
+    # print('Event created :', info)
 
 
     # Electrode Locations
@@ -118,13 +118,33 @@ def extractBCI3(runs = 0, person_id = [0]):
 
     # %%
     ten_twenty_montage = mne.channels.make_standard_montage('standard_1020')
+    new_name = []
+    for ch in ten_twenty_montage.ch_names:
+        ch = ch.lower()
+        new_name.append(ch[0].upper() + ch[1:])
+
+    ten_twenty_montage.ch_names = new_name
+
+    ch_names = info['ch_names']
+    new_name = []
+    for ch in ch_names:
+        ch = ch.lower()
+        new_name.append(ch[0].upper() + ch[1:])
+
+    # Remove dots from channel names in raw.info['ch_names']
+    new_names = []
+    for ch_name in new_name:
+        new_names.append(ch_name.split('.')[0])
+
+    mne.rename_channels(info, dict(zip(info['ch_names'], new_names)))
+    # info.set_montage(ten_twenty_montage, verbose=False, on_missing='ignore');
     # print(ten_twenty_montage.ch_names)
     # print(chan_names)
 
     # %%
-    raw = mne.io.RawArray(EEGdata, info)
-    raw = raw.pick_channels(ch_names = ten_twenty_montage.ch_names).copy()
-    raw.set_montage('standard_1020')
+    raw = mne.io.RawArray(EEGdata, info, verbose = False)
+    # raw = raw.pick_channels(ch_names = ten_twenty_montage.ch_names).copy()
+    # raw.set_montage('standard_1020', on_missing='ignore')
 
     eventLength = Y.shape[0]
     ev = dat['mrk']['pos'][0][0][0] #[i*sfreq*3 for i in range(eventLength)]
@@ -134,6 +154,14 @@ def extractBCI3(runs = 0, person_id = [0]):
                             np.array(Y,  dtype = int)))
     ann = mne.annotations_from_events(event_marker, sfreq, event_desc = Y)
     raw.set_annotations(ann)
+
+    # Locations from Physionet dataset
+    # mon = mne.channels.read_dig_fif('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/extraction/Physionet_ChLoc_raw.fif')
+    locinfo = mne.io.read_raw_fif('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/extraction/Physionet_ChLoc_raw.fif', preload = False, verbose = False)
+    locinfo.pick_channels(raw.ch_names)
+
+    raw._set_channel_positions(locinfo._get_channel_positions(), locinfo.ch_names)
+
     return raw
 
 if __name__== "__main__":

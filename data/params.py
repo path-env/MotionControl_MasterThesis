@@ -24,10 +24,10 @@ class PhysionetParams():
 class BCI3Params():
     def __init__(self) -> None:
         self.name ='BCI3'
-        self.elec_lines_f = 60 #HZ
+        self.elec_lines_f = 0.51 #HZ 
         self.ssp_n_eeg = 2 # No . of EEG SSP components
         self.ica_n_comp = 20
-        self.event_dict = dict(right = -1, foot = 1, test = 0)
+        self.event_dict = dict(right = 1, foot = 3, test = 2)
         self.tmin, self.tmax =-0.5, 1
 
 #%% Analysis configuration Partameters
