@@ -21,6 +21,7 @@ class PhysionetParams():
         self.event_dict = dict({'T1':2, 'T2':3}) 
         self.tmin, self.tmax =-2, 4
 
+#%% BCI Params
 class BCI3Params():
     def __init__(self) -> None:
         self.name ='BCI3'
