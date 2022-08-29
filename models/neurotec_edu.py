@@ -30,3 +30,8 @@ class Neurotech_net(nn.Module):
         x = torch.relu(self.L4(x))
         y = torch.sigmoid(self.L5(x))
         return y
+
+
+if __name__ =='__main__':
+    model = Neurotech_net()
+    print(model)
