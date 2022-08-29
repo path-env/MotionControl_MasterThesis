@@ -3,7 +3,8 @@
     
     "python.autoComplete.extraPaths": ["/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis",
     "/home/mangaldeep/carla-ros-bridge/catkin_ws/devel/lib/python3/dist-packages",
-    "/opt/ros/noetic/lib/python3/dist-packages"],
+    "/opt/ros/noetic/lib/python3/dist-packages",
+    "/carla-ros-bridge/catkin_ws/src/ros-bridge"],
     "editor.autoClosingQuotes": "always",
     "python.linting.enabled": true,
 
@@ -17,9 +18,6 @@
     "telemetry.enableCrashReporter": false,
     "telemetry.enableTelemetry": false,
     "latex-workshop.latex.recipes": [
-    
-
-
       {
           "name": "latexmk 🔃",
           "tools": [
@@ -115,5 +113,6 @@
   "latex-workshop.bibtex-fields.sort.enabled": true,
   "latex-workshop.latex.bibDirs": [
       "/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/docs/bib"
-  ]
-  }
+],
+"python.globalModuleInstallation": true
+}

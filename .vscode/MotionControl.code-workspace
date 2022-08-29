@@ -2,17 +2,31 @@
 	"folders": [
 		{
 			"path": ".."
+		},
+		{
+			"path": "../../../../../../opt/ros/noetic/lib/python3/dist-packages"
+		},
+		{
+			"path": "../../../../../../home/mangaldeep/carla-ros-bridge/catkin_ws/src/ros-bridge"
 		}
 	],
 	"settings": {
 		"python.pythonPath": "/usr/bin/python3",
 		"python.jediEnabled": true,
 		"python.autoComplete.extraPaths": [
-			".."
+			"..",
+			"../../../../../../home/mangaldeep/carla-ros-bridge/catkin_ws/src/ros-bridge",
+			"../../../../../../opt/ros/noetic/lib/python3/dist-packages"
 		],
 		"python.analysis.extraPaths": [
-			".."
-		]
+			"..",
+			"../../../../../../home/mangaldeep/carla-ros-bridge/catkin_ws/src/ros-bridge",
+			"../../../../../../opt/ros/noetic/lib/python3/dist-packages"
+		],
+		"latex-workshop.latex.bibDirs": [
+			"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/docs/bib"
+		],
+		"ros.distro": "noetic"
 	},
 	"launch": {
 		"version": "0.2.0",
