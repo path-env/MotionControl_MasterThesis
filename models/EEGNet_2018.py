@@ -94,12 +94,12 @@ class EEGnet(nn.Module):
         x = self.dropout2(x)
         x = torch.flatten(x,1)
         x = nn.functional.relu(self.fc1(x))
-        x = nn.functional.sigmoid(self.fc2(x)).float()
+        x = torch.sigmoid(self.fc2(x)).float()
         # x = nn.functional.softmax(self.fc2(x)).float()
         return x
         
 if __name__ =='__main__':
-    filename = 'Train_RAW_[3]_1.npz'
+    filename = 'Train_locl_ssp_car_ica_TF_EEGnet_CNN_[3]_1.npz'
     datafile = np.load(f'/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/feature_extraction/{filename}')
     train_data = datafile['arr_0']
     labels = datafile['arr_1']
@@ -107,7 +107,7 @@ if __name__ =='__main__':
     # print(labels)
     n_classes = np.unique(labels).shape[0]
 
-    bs, lr = 3, 0.001
+    bs, lr = 1, 0.001
     data = data_container(train_data, labels)
     dataset_size = len(data)
     indices = list(range(dataset_size))
@@ -121,9 +121,9 @@ if __name__ =='__main__':
     train_sampler = SubsetRandomSampler(train_indices)
     valid_sampler = SubsetRandomSampler(val_indices)
     train_loader = torch.utils.data.DataLoader(data, batch_size=bs, sampler = train_sampler)
-    feat, label = next(iter(train_loader))
+    # feat, label = next(iter(train_loader))
 
-    _,_,n_chan,n_T = feat.shape
+    _,n_chan,n_T = train_loader.dataset.__getitem__(0)[0].shape
     model =  EEGnet(n_classes,n_chan,n_T).double()
     # print(model)
     # Loss function
@@ -133,7 +133,7 @@ if __name__ =='__main__':
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
     # Decay LR by a factor of 0.1 every 7 epochs
-    LRscheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+    LRscheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
 
     dCfg = BCI3Params()
 

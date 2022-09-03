@@ -37,8 +37,8 @@ import torch, torchvision
 from torchvision import transforms, models
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, Dataset
-from torchsummary import summary
+# from torch.utils.data import DataLoader, Dataset
+# from torchsummary import summary
 from torch.utils.data.sampler import SubsetRandomSampler
 import torch.optim.lr_scheduler as lr_scheduler
 
@@ -53,6 +53,7 @@ from sklearn.kernel_approximation import RBFSampler
 from main.extraction.data_extractor import data_container
 from models.neurotec_edu import Neurotech_net
 from models.MI_CNN_WT_2019 import TF_net
+from models.EEGNet_2018 import EEGnet
 from models.train_net import train_and_validate
 
 # %%
@@ -128,12 +129,16 @@ class BrainSignalAnalysis():
             # test = self.train_data[0,:,:,:].swap_axes(0,2).numpy()
             # cv2.imshow('Test', test)
             # cv2.waitKey(0)
-            return True
+            return None
 
         # %%
         # Remove the artifacts
     def artifact_removal(self, method, save_epochs = False):
         rawfltrd = self.rawfltrd.copy()
+        if method.find('locl')!= -1:
+            pick_ch = bm.C_Channels  # Considering only the channels that map to topo map functionality
+            rawfltrd.pick_channels(pick_ch); # inplace
+
         if method.find('ssp')!=-1:
             eog_proj, events = mne.preprocessing.compute_proj_eog(rawfltrd, n_grad=0, n_mag=0, n_eeg=self.dCfg.ssp_n_eeg, average=True, verbose=False, ch_name=  self.dCfg.eog_ref_ch, reject=None) # returns EOG Proj and events of blinks
             rawfltrd.add_proj(projs=eog_proj);
@@ -274,8 +279,8 @@ class BrainSignalAnalysis():
             powerEp = powerdB.copy()
             t = np.arange(np.abs(baset[1]-baset[0])*self.epochs.info['sfreq'], dtype = np.int64)
             for ep in range(power.data.shape[0]):
-                EPpower  = np.mean(power.data[ep,:,:,:],axis=1)
-                for f in range(EPpower.shape[0]):
+                EPpower  = np.mean(power.data[ep,:,:,:],axis=0)
+                for f in range(power.data.shape[2]):
                     baseline = np.mean(EPpower[f,t])
                     activity = EPpower[f,:]
                     powerdB[ep,f,:] = 10*np.log10(activity/baseline)
@@ -309,13 +314,20 @@ class BrainSignalAnalysis():
             
         # %%
         # classify
-    def classifier(self, method, save_results = True, save_model = True):
-        if method =='CNN':
-            self._matrix2Image()
+    def classifier(self, method, save_results = True, save_model = True, feat_file = None):
+        if feat_file is not None:
+            datafile = np.load(f'{feat_file}')
+            self.train_data = datafile['arr_0']
+            self.label = datafile['arr_1']
+
+        if method.find('_CNN')!=-1:
+            # self._matrix2Image()
             validation_split = 0.25
             shuffle_dataset = True
             random_seed = 42
             batch_size = 3
+            learning_rate = 0.001
+
             # Input data & labels
             data = data_container(self.train_data, self.label)
             dataset_size = len(data)
@@ -335,14 +347,17 @@ class BrainSignalAnalysis():
             validation_loader = torch.utils.data.DataLoader(data, batch_size=batch_size,
                                                             sampler=valid_sampler)
             
+            _,n_chan,n_T = train_loader.dataset.__getitem__(0)[0].shape
+            n_classes = np.unique(self.label).shape[0]
             # Model
-            model = TF_net(self.classes)
+            model = method.split('_')[-2:-1][0]
+            model = eval(model)(n_classes, n_chan,n_T).double()
 
             # Loss function
-            loss = torch.nn.CrossEntropyLoss()
+            loss = torch.nn.BCELoss()
 
             # Observe that all parameters are being optimized
-            optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+            optimizer = optim.SGD(model.parameters(), lr= learning_rate, momentum=0.9)
 
             # Decay LR by a factor of 0.1 every 7 epochs
             LRscheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
@@ -350,8 +365,11 @@ class BrainSignalAnalysis():
             # # Optimizer
             # optimizer = torch.optim.Adam(model.parameters())
 
+            tb_comment = f'batch_size={batch_size}, lr={learning_rate}'
+            tb_info = (f'runs/{model._get_name()}/{data_cfg.name}/{method}', tb_comment)
+
             # train and test
-            train_and_validate(model, train_loader, validation_loader, loss,optimizer, LRscheduler, epochs = 25)
+            train_and_validate(model, train_loader, validation_loader, loss,optimizer, LRscheduler, tb_info,epochs = 100)
 
             if save_model:
                 torch.save(model, f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified'}")
@@ -375,14 +393,16 @@ if __name__ =='__main__':
     data_cfg = BCI3Params()
     analy_cfg = globalTrial()
     artifact_removal_methods =  'ssp_car_ica'
-    feat_extract_methods = artifact_removal_methods+'_RAW'
-    classi_methods = 'ML'
-
+    feat_extract_methods = artifact_removal_methods+'_TF'
+    classi_methods = 'EEGnet_CNN'
+    methods = 'locl_ssp_car_ica_TF_EEGnet_CNN'
     raw = extractBCI3(runs , person_id)
     # raw = extractPhysionet(runs, person_id)
     
     bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, runs, person_id)
-    bsa.artifact_removal(artifact_removal_methods, save_epochs = False)
-    bsa.feature_extraction(feat_extract_methods, save_feat = True)#,
+
+    # bsa.artifact_removal(methods, save_epochs = False)
+    # bsa.feature_extraction(methods, save_feat = True)#,
         # epoch_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/preproc/BCI3_ssp_car_ica_3_P3_epo.fif')
-    # bsa.classifier(classi_methods, save_model = False)
+    bsa.classifier(methods, save_model = True,
+        feat_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/feature_extraction/Train_locl_ssp_car_ica_TF_EEGnet_CNN_[3]_1.npz')
