@@ -22,8 +22,8 @@ class data_container(Dataset):
             self.test_x = test[0]
             self.test_y = test[1]
         else:
-            self.x = feat
-            self.y = label
+            self.x = torch.tensor(feat).unsqueeze(1)
+            self.y = torch.tensor(label).float()
             
             # feat, label = extractPhysioNet(16,8)
             # self.__test_train_split__(feat, label)

@@ -4,16 +4,16 @@ sys.path.append('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis')
 import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
-from sklearn.model_selection import StratifiedKFold
-
-from extraction.data_extractor import data_container
+# from sklearn.model_selection import StratifiedKFold
+import torch.optim.lr_scheduler as lr_scheduler
+from main.extraction.data_extractor import data_container
 
 #%% May have to change this!!!!
 from models.DeepRNN import DRNN
 from models.neurotec_edu import Neurotech_net
 from data.params import NeuroTechNetParams
 
-def train_and_validate(model,train_loader, validation_loader, loss_criterion, optimizer, LRscheduler, epochs=25):
+def train_and_validate(model,train_loader, validation_loader, loss_criterion, optimizer, LRscheduler, tb_info,epochs=25):
     '''
     Function to train and validate
     Parameters
@@ -26,17 +26,15 @@ def train_and_validate(model,train_loader, validation_loader, loss_criterion, op
         model: Trained Model with best validation accuracy
         history: (dict object): Having training loss, accuracy and validation loss, accuracy
     '''
-    
     start = time.time()
-    writer = SummaryWriter('runs/fake_data')
+    tb = SummaryWriter(tb_info[0], comment=tb_info[1])
     history = []
 
     best_acc = 0.0
     # device = 'cuda' if torch.cuda.is_available() else "cpu"
     device = 'cpu'
-    # model = model.cuda() if torch.cuda.is_available() else model
+    model = model.to(device)
 
-    # writer.add_graph(model, train_loader.x)
     for epoch in range(epochs):
         train_data_size = 0 #train_loader.dataset.x.shape[0]
         validation_data_size = 0 #validation_loader.dataset.x.shape[0]
@@ -52,19 +50,20 @@ def train_and_validate(model,train_loader, validation_loader, loss_criterion, op
         
         valid_loss = 0.0
         valid_acc = 0.0
-        
+        # labels, preds = [],[]
         for i, (inputs, labels) in enumerate(train_loader):
 
             inputs = inputs.to(device)
-            labels = labels.to(device).float()
+            labels = labels.to(device)
             
             # Clean existing gradients
             optimizer.zero_grad()
             
             # Forward pass - compute outputs on input data using the model
-            outputs = model(inputs).squeeze(0)
+            outputs = model(inputs)#.squeeze(0)
             labels = labels.view_as(outputs)
             
+            # print(f'Labels:{labels}, Outputs:{outputs}')
             # Compute loss
             loss = loss_criterion(outputs, labels)
             
@@ -78,8 +77,9 @@ def train_and_validate(model,train_loader, validation_loader, loss_criterion, op
             train_loss += loss.item() * inputs.size(0)
             
             # Compute the accuracy
-            ret, predictions = torch.max(outputs.data, -1)
-            correct_counts = predictions.eq(labels.data.view_as(predictions))
+            # _, predictions = torch.max(outputs.data, -1)
+            predictions = torch.round(outputs)
+            correct_counts = (predictions == labels)
             
             # Convert correct_counts to float and then compute the mean
             acc = torch.mean(correct_counts.type(torch.FloatTensor))
@@ -87,9 +87,10 @@ def train_and_validate(model,train_loader, validation_loader, loss_criterion, op
             # Compute total accuracy in the whole batch and add to train_acc
             train_acc += acc.item() * inputs.size(0)
             
-            train_data_size+= train_loader.batch_size
+            train_data_size+= inputs.size(0)
             # print("Batch number: {:03d}, Training: Loss: {:.4f}, Accuracy: {:.4f}".format(i, loss.item(), acc.item()))
 
+        # tb.add_pr_curve()
         LRscheduler.step()    
 
         # Validation - No gradient tracking needed
@@ -114,8 +115,8 @@ def train_and_validate(model,train_loader, validation_loader, loss_criterion, op
                 valid_loss += loss.item() * inputs.size(0)
 
                 # Calculate validation accuracy
-                ret, predictions = torch.max(outputs.data, -1)
-                correct_counts = predictions.eq(labels.data.view_as(predictions))
+                predictions = torch.round(outputs)
+                correct_counts = (predictions == labels)
 
                 # Convert correct_counts to float and then compute the mean
                 acc = torch.mean(correct_counts.type(torch.FloatTensor))
@@ -123,7 +124,7 @@ def train_and_validate(model,train_loader, validation_loader, loss_criterion, op
                 # Compute total accuracy in the whole batch and add to valid_acc
                 valid_acc += acc.item() * inputs.size(0)
 
-                validation_data_size+= validation_loader.batch_size
+                validation_data_size+= inputs.size(0)
                 #print("Validation Batch number: {:03d}, Validation: Loss: {:.4f}, Accuracy: {:.4f}".format(j, loss.item(), acc.item()))
             
         # Find average training loss and training accuracy
@@ -134,50 +135,69 @@ def train_and_validate(model,train_loader, validation_loader, loss_criterion, op
         avg_valid_loss = valid_loss/validation_data_size 
         avg_valid_acc = valid_acc/validation_data_size
 
+        tb.add_scalar('valid_acc',avg_valid_acc,epoch)
+        tb.add_scalar('valid_loss', avg_valid_loss,epoch)
+
+        tb.add_scalar('train_acc', avg_train_acc, epoch)
+        tb.add_scalar('train_loss', avg_train_loss, epoch)
+
+        for name, weight in model.named_parameters():
+            tb.add_histogram(name, weight, epoch)
+            tb.add_histogram(f'{name}.grad', weight.grad, epoch)
+
         history.append([avg_train_loss, avg_valid_loss, avg_train_acc, avg_valid_acc])
                 
         epoch_end = time.time()
         
-        # print(train_data_size)
-        # print(validation_data_size)
-        print("Epoch : {:03d}, Training: Loss: {:.4f}, Accuracy: {:.4f}%, \n\t\tValidation : Loss : {:.4f}, Accuracy: {:.4f}%, Time: {:.4f}s".format(epoch+1, avg_train_loss, avg_train_acc*100, avg_valid_loss, avg_valid_acc*100, epoch_end-epoch_start))
+        print("Epoch : {:03d}, Training: Loss: {:.4f}, Accuracy: {:.4f}%, \n\t\tValidation: Loss : {:.4f}, Accuracy: {:.4f}%, Time: {:.4f}s".format(epoch+1, avg_train_loss, avg_train_acc*100, avg_valid_loss, avg_valid_acc*100, epoch_end-epoch_start))
         
-        # Save if the model has best accuracy till now
-        #torch.save(model, dataset+'_model_'+str(epoch)+'.pt')
-    writer.close()       
+    tb.add_graph(model, inputs.double())
+    # Save if the model has best accuracy till now
+    #torch.save(model, dataset+'_model_'+str(epoch)+'.pt')
+    tb.close()       
     return model, history
 
 #%%
 if __name__ == "__main__":
+    data = data_container(0,0, check_net= True)
+    train_loader = torch.utils.data.DataLoader(data, batch_size=1)
+    validation_loader = torch.utils.data.DataLoader(data, batch_size=1)
+
     model = Neurotech_net()
+
     params = NeuroTechNetParams()
     # Loss Function
-    criteria = torch.nn.MSELoss()
+    loss = torch.nn.MSELoss()
     # Optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=params.learning_rate)
+
+    LRscheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+
+    tb_info = ('trial','comment')
+    train_and_validate(model, train_loader, validation_loader, loss,optimizer, LRscheduler, tb_info,epochs = 25)
     # Tensorboard writer
-    writer = SummaryWriter('runs/fake_data')
+    # writer = SummaryWriter('runs/fake_data')
 
-    #%% Model Training
-    # create batches
-    dataset = data_container(check_net = True)
-    writer.add_graph(model, dataset.train_x)
-    for n_iter,epoch in enumerate(range(1000)):
-        # for x,y in zip(dataset.train_x, dataset.train_y):
-        optimizer.zero_grad()
-        yhat = model(dataset.train_x)
-        loss = criteria(yhat, dataset.train_y)
-        loss.backward()
-        optimizer.step()
-        writer.add_scalar('Loss/train', loss, n_iter)
-        # writer.add_scalar('Loss/test', np.random.random(), n_iter)
-        # writer.add_scalar('Accuracy/train', np.random.random(), n_iter)
-        # writer.add_scalar('Accuracy/test', np.random.random(), n_iter)
-    # writer.add_scalar()
-    writer.close()
+    # #%% Model Training
+    # # create batches
+    # dataset = data_container(0,0,check_net = True)
+    # writer.add_graph(model, dataset.x)
+    # for n_iter,epoch in enumerate(range(1000)):
+    #     # for x,y in zip(dataset.x, dataset.y):
+    #     optimizer.zero_grad()
+    #     yhat = model(dataset.x)
+    #     loss = loss(yhat, dataset.y)
+    #     loss.backward()
+    #     optimizer.step()
+    #     writer.add_scalar('Loss/train', loss, n_iter)
+    #     # writer.add_scalar('Loss/test', np.random.random(), n_iter)
+    #     # writer.add_scalar('Accuracy/train', np.random.random(), n_iter)
+    #     # writer.add_scalar('Accuracy/test', np.random.random(), n_iter)
+    # # writer.add_scalar()
+    # writer.close()
 
-    # torch.save(model, "/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/model_check")
-    #%% Model Testing
-    # import torch
-    # model = torch.load("/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/model_check")
-    test_results = model(dataset.test_x).data.tolist()
+    # # torch.save(model, "/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/model_check")
+    # #%% Model Testing
+    # # import torch
+    # # model = torch.load("/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/model_check")
+    # test_results = model(dataset.test_x).data.tolist()
