@@ -114,5 +114,11 @@
   "latex-workshop.latex.bibDirs": [
       "/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/docs/bib"
 ],
-"python.globalModuleInstallation": true
+"python.globalModuleInstallation": true,
+"python.analysis.extraPaths": [
+    "..",
+    "../../../../../../home/mangaldeep/carla-ros-bridge/catkin_ws/src/ros-bridge",
+    "../../../../../../opt/ros/noetic/lib/python3/dist-packages",
+    "./main"
+]
 }
