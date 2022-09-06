@@ -5,7 +5,8 @@ sys.path.append('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis')
 from scipy.io import loadmat
 
 # %%
-def extractBCI3(runs = 0, person_id = [0]):
+def extractBCI3(runs = 0, person_id = 0):
+    #sfreq = 100 Hz
     files = ['/media/mangaldeep/HDD3/DataSets/BCI3_Competition/data_set_IVa_aa_mat/100Hz/data_set_IVa_aa.mat',
     '/media/mangaldeep/HDD3/DataSets/BCI3_Competition/data_set_IVa_al_mat/100Hz/data_set_IVa_al.mat',
     '/media/mangaldeep/HDD3/DataSets/BCI3_Competition/data_set_IVa_av_mat/100Hz/data_set_IVa_av.mat',

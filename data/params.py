@@ -14,15 +14,30 @@ class NeuroTechNetParams():
 class EEGNetParams():
     def __init__(self) -> None:
         self.name = 'EEGNet'
-        self.epochs = 500
+        self.epochs = 100
+        self.val_split = 0.25
+        self.test_split = 0.1
+        self.val_bs = 3
+        self.train_bs = 3
         self.eeg_sample_count = 240 # How many samples are we training
-        self.learning_rate = 1e-3 # How hard the network will correct its mistakes while learning
+        self.lr = 0.001 # How hard the network will correct its mistakes while learning
+        self.optim_moment= 0.9
+        self.num_wrkrs = 3
         self.eeg_sample_length = 226 # Number of eeg data points per sample
-        self.number_of_classes = 1 # We want to answer the "is this a P300?" question
-        self.hidden1 = 500 # Number of neurons in our first hidden layer
-        self.hidden2 = 1000 # Number of neurons in our second hidden layer
-        self.hidden3 = 100 # Number of neurons in our third hidden layer
-        self.output = 10 # Number of neurons in our output layer
+
+class TFNetParams():
+    def __init__(self) -> None:
+        self.name = 'TFNet'
+        self.epochs = 100
+        self.val_split = 0.25
+        self.test_split = 0.1
+        self.val_bs = 3
+        self.train_bs = 3
+        self.eeg_sample_count = 240 # How many samples are we training
+        self.lr = 0.001 # How hard the network will correct its mistakes while learning
+        self.optim_moment= 0.9
+        self.num_wrkrs = 3
+        self.eeg_sample_length = 226 # Number of eeg data points per sample
         
 ######################################################
 # Data configuration parameters
@@ -30,6 +45,7 @@ class EEGNetParams():
 class PhysionetParams():
     def __init__(self) -> None:
         self.name ='Physionet'
+        self.sfreq = 160 #HZ
         self.inion = ['Iz']
         self.elec_lines_f = 60 #HZ
         self.ssp_n_eeg = 2 # No . of EEG SSP components
@@ -44,6 +60,7 @@ class PhysionetParams():
 class BCI3Params():
     def __init__(self) -> None:
         self.name ='BCI3'
+        self.sfreq = 100 #HZ
         self.inion = ['I1', 'I2']
         self.elec_lines_f = 0.51 #HZ 
         self.ssp_n_eeg = 2 # No . of EEG SSP components

@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 #Local Imports
 # from main.extraction.physionet_MI import  extractPhysionet, extractBCI3
 from data import brain_atlas  as bm
-from data.params import BCI3Params, PhysionetParams, globalTrial
+from data.params import BCI3Params, EEGNetParams, PhysionetParams, globalTrial
 # Data Extraction
 from main.extraction.bci3_IVa import extractBCI3
 from main.extraction.physionet_MI import extractPhysionet
@@ -37,10 +37,12 @@ import torch, torchvision
 from torchvision import transforms, models
 import torch.nn as nn
 import torch.optim as optim
-# from torch.utils.data import DataLoader, Dataset
+
 # from torchsummary import summary
-from torch.utils.data.sampler import SubsetRandomSampler
+
 import torch.optim.lr_scheduler as lr_scheduler
+# torch.manual_seed(42)
+# torch.cuda.manual_seed_all(42)
 
 from sklearn.model_selection import ShuffleSplit
 from sklearn.pipeline import Pipeline
@@ -52,7 +54,7 @@ from sklearn.kernel_approximation import RBFSampler
 
 from main.extraction.data_extractor import data_container
 from models.neurotec_edu import Neurotech_net
-from models.MI_CNN_WT_2019 import TF_net
+from models.MI_CNN_WT_2019 import TFnet
 from models.EEGNet_2018 import EEGnet
 from models.train_net import train_and_validate
 
@@ -60,9 +62,10 @@ from models.train_net import train_and_validate
 
 
 class BrainSignalAnalysis():
-    def __init__(self, raw, data_cfg, analy_cfg, runs, person_id) -> None:
+    def __init__(self, raw, data_cfg, analy_cfg, net_cfg,runs, person_id) -> None:
         self.dCfg = data_cfg
         self.aCfg = analy_cfg
+        self.nCfg = net_cfg
         self.runs = runs
         self.person_id = person_id
 
@@ -322,42 +325,26 @@ class BrainSignalAnalysis():
 
         if method.find('_CNN')!=-1:
             # self._matrix2Image()
-            validation_split = 0.25
-            shuffle_dataset = True
-            random_seed = 42
+
             batch_size = 3
             learning_rate = 0.001
 
+            # Add channel dim for convolutions
+            if len(self.train_data.shape) <4:
+                self.train_data = np.expand_dims(self.train_data, axis=1)
             # Input data & labels
             data = data_container(self.train_data, self.label)
-            dataset_size = len(data)
-            indices = list(range(dataset_size))
-            split = int(np.floor(validation_split * dataset_size))
-            if shuffle_dataset :
-                np.random.seed(random_seed)
-                np.random.shuffle(indices)
-            train_indices, val_indices = indices[split:], indices[:split]
-            
-            # Train and validate shuffle split
-            train_sampler = SubsetRandomSampler(train_indices)
-            valid_sampler = SubsetRandomSampler(val_indices)
-
-            train_loader = torch.utils.data.DataLoader(data, batch_size=batch_size, 
-                                                    sampler=train_sampler)
-            validation_loader = torch.utils.data.DataLoader(data, batch_size=batch_size,
-                                                            sampler=valid_sampler)
-            
-            _,n_chan,n_T = train_loader.dataset.__getitem__(0)[0].shape
+            _,_,n_chan,n_T = data.x.shape
             n_classes = np.unique(self.label).shape[0]
-            # Model
-            model = method.split('_')[-2:-1][0]
-            model = eval(model)(n_classes, n_chan,n_T).double()
 
+            # Model
+            model = eval(method.split('_')[-2:-1][0])
+            model = model(n_classes, n_chan,self.dCfg.sfreq)#.float()
             # Loss function
             loss = torch.nn.BCELoss()
 
             # Observe that all parameters are being optimized
-            optimizer = optim.SGD(model.parameters(), lr= learning_rate, momentum=0.9)
+            optimizer = optim.SGD(model.parameters(), lr= self.nCfg.lr, momentum= self.nCfg.optim_moment)
 
             # Decay LR by a factor of 0.1 every 7 epochs
             LRscheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
@@ -365,14 +352,13 @@ class BrainSignalAnalysis():
             # # Optimizer
             # optimizer = torch.optim.Adam(model.parameters())
 
-            tb_comment = f'batch_size={batch_size}, lr={learning_rate}'
-            tb_info = (f'runs/{model._get_name()}/{data_cfg.name}/{method}', tb_comment)
+            tb_info = f'runs/{model._get_name()}/{self.dCfg.name}/{method}'
 
             # train and test
-            train_and_validate(model, train_loader, validation_loader, loss,optimizer, LRscheduler, tb_info,epochs = 100)
+            train_and_validate(data,model,loss,optimizer, LRscheduler, tb_info, self.dCfg, self.nCfg,epochs = 100)
 
             if save_model:
-                torch.save(model, f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified'}")
+                torch.save(model, f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified.pt'}")
 
         if method == 'ML':
             cv = ShuffleSplit(10, test_size = 0.2, random_state=1)
@@ -392,6 +378,7 @@ if __name__ =='__main__':
     person_id = 1
     data_cfg = BCI3Params()
     analy_cfg = globalTrial()
+    net_cfg = EEGNetParams()
     artifact_removal_methods =  'ssp_car_ica'
     feat_extract_methods = artifact_removal_methods+'_TF'
     classi_methods = 'EEGnet_CNN'
@@ -399,7 +386,7 @@ if __name__ =='__main__':
     raw = extractBCI3(runs , person_id)
     # raw = extractPhysionet(runs, person_id)
     
-    bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, runs, person_id)
+    bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg, runs, person_id)
 
     # bsa.artifact_removal(methods, save_epochs = False)
     # bsa.feature_extraction(methods, save_feat = True)#,

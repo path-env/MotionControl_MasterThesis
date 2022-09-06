@@ -22,8 +22,13 @@ class data_container(Dataset):
             self.test_x = test[0]
             self.test_y = test[1]
         else:
-            self.x = torch.tensor(feat).unsqueeze(1)
-            self.y = torch.tensor(label).float()
+            device = 'cuda' if torch.cuda.is_available() else "cpu"
+            if len(feat.shape) <3:
+                print('Input feature shape is wrong')
+                sys.exit(1)
+            self.x = torch.tensor(feat, device=device, dtype= torch.float16)#.half()#.unsqueeze(1)
+            label[label==3] = 0
+            self.y = torch.tensor(label, device=device, dtype= torch.float16)#.half()
             
             # feat, label = extractPhysioNet(16,8)
             # self.__test_train_split__(feat, label)
