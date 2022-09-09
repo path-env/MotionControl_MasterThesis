@@ -11,7 +11,7 @@ import numpy as np
 from models.train_net import train_and_validate
 from data.params import BCI3Params, EEGNetParams
 from main.extraction.data_extractor import data_container
-
+from models.profile_net import profiler
 
 class EEGnet(nn.Module):
     def __init__(self, n_classes, n_chan, sf) -> None:
@@ -93,7 +93,7 @@ class EEGnet(nn.Module):
         x = self.dropout2(x)
         x = torch.flatten(x,1)
         x = nn.functional.relu(self.fc1(x))
-        x = torch.sigmoid(self.fc2(x)).float()
+        x = torch.sigmoid(self.fc2(x))
         # x = nn.functional.softmax(self.fc2(x)).float()
         return x
         
@@ -111,9 +111,9 @@ if __name__ =='__main__':
     n_classes = np.unique(labels).shape[0]
 
     bs, lr = 1, 0.001
-    data = data_container(train_data, labels)
+    data = data_container(train_data, labels, nCfg)
 
-    _,n_chan,_ = data.x.shape
+    _,_,n_chan,_ = data.x.shape
     model =  EEGnet(n_classes,n_chan,dCfg.sfreq)
     # print(model)
     # Loss function
@@ -126,8 +126,9 @@ if __name__ =='__main__':
     LRscheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
 
     tb_comment = f'batch_size={nCfg.train_bs}, lr={nCfg.lr}'
-    tb_info = (f'runs/{model._get_name()}/{dCfg.name}/{filename}', tb_comment)
+    tb_info = (f'log/{model._get_name()}/{dCfg.name}/{filename}', tb_comment)
     # tb_info = ('trial','comment')
     # train and test
-    train_and_validate(data,model,loss,optimizer, LRscheduler, tb_info, dCfg, nCfg,epochs = 100)
-    torch.save(model,f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified.pt'}")
+    train_and_validate(data,model,loss,optimizer, LRscheduler, tb_info, dCfg, nCfg,epochs = 10)
+    # profiler(model, optimizer, loss, data, LRscheduler, tb_info[0])
+    # torch.save(model,f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified.pt'}")

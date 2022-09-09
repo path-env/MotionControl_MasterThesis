@@ -4,6 +4,7 @@ data/__pycache__/
 models/__pycache__/
 main/data_shredder/__pycache__/
 main/__pycache__/
+log/
 main/extraction/__pycache__/physionet_MI.cpython-38.pyc
 ddd/Screenshot from 2022-04-26 10-36-00.png
 ddd/Screenshot from 2022-04-26 10-37-15.png
@@ -62,3 +63,4 @@ main/extraction/__pycache__/physionet_MI.cpython-38.pyc
 main/extraction/__pycache__/physionet_MI.cpython-38.pyc
 main/extraction/__pycache__/data_extractor.cpython-38.pyc
 main/extraction/__pycache__/physionet_MI.cpython-38.pyc
+models/QEEGNet_2020.py

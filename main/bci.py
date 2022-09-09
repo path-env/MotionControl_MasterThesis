@@ -333,7 +333,7 @@ class BrainSignalAnalysis():
             if len(self.train_data.shape) <4:
                 self.train_data = np.expand_dims(self.train_data, axis=1)
             # Input data & labels
-            data = data_container(self.train_data, self.label)
+            data = data_container(self.train_data, self.label, self.nCfg)
             _,_,n_chan,n_T = data.x.shape
             n_classes = np.unique(self.label).shape[0]
 
