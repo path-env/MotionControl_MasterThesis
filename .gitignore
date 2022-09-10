@@ -5,62 +5,14 @@ models/__pycache__/
 main/data_shredder/__pycache__/
 main/__pycache__/
 log/
-main/extraction/__pycache__/physionet_MI.cpython-38.pyc
-ddd/Screenshot from 2022-04-26 10-36-00.png
-ddd/Screenshot from 2022-04-26 10-37-15.png
-ddd/Screenshot from 2022-04-26 10-40-21.png
-ddd/Screenshot from 2022-04-26 11-17-08.png
-ddd/Screenshot from 2022-04-26 11-20-39.png
-ddd/Screenshot from 2022-04-26 17-21-01.png
-ddd/Screenshot from 2022-04-27 11-29-32.png
-ddd/Screenshot from 2022-04-27 11-30-43.png
-ddd/Screenshot from 2022-04-27 11-31-28.png
-ddd/Screenshot from 2022-04-27 11-37-23.png
-ddd/Screenshot from 2022-04-27 11-42-00.png
-ddd/Screenshot from 2022-04-27 12-22-13.png
-ddd/Screenshot from 2022-04-27 12-29-23.png
-ddd/Screenshot from 2022-04-27 12-30-06.png
-ddd/Screenshot from 2022-04-27 12-41-21.png
-ddd/Screenshot from 2022-04-27 12-46-11.png
-ddd/Screenshot from 2022-04-27 12-48-12.png
-ddd/Screenshot from 2022-04-27 16-19-55.png
-ddd/Screenshot from 2022-04-27 19-11-47.png
-ddd/Screenshot from 2022-04-28 12-39-02.png
-ddd/Screenshot from 2022-04-28 12-56-56.png
-ddd/Screenshot from 2022-04-28 13-08-24.png
-ddd/Screenshot from 2022-04-28 18-38-01.png
-ddd/Screenshot from 2022-04-28 18-40-34.png
-ddd/Screenshot from 2022-04-29 11-36-34.png
-ddd/Screenshot from 2022-04-29 11-40-56.png
-ddd/Screenshot from 2022-04-29 11-43-15.png
-ddd/Screenshot from 2022-04-29 11-45-00.png
-ddd/Screenshot from 2022-04-29 11-48-09.png
-ddd/Screenshot from 2022-05-02 17-07-52.png
-ddd/Screenshot from 2022-05-02 17-18-33.png
-ddd/Screenshot from 2022-05-02 22-54-16.png
-ddd/Screenshot from 2022-05-02 23-33-12.png
-ddd/Screenshot from 2022-05-03 21-09-52.png
-ddd/Screenshot from 2022-05-03 21-10-16.png
-ddd/Screenshot from 2022-05-03 21-24-29.png
-ddd/Screenshot from 2022-05-03 21-29-42.png
-ddd/Screenshot from 2022-05-03 21-29-55.png
-ddd/Screenshot from 2022-05-03 21-32-25.png
-ddd/Screenshot from 2022-05-03 21-34-00.png
-ddd/Screenshot from 2022-05-03 21-36-46.png
-ddd/Screenshot from 2022-05-04 10-19-11.png
-ddd/Screenshot from 2022-05-04 10-24-19.png
-ddd/Screenshot from 2022-05-04 10-40-12.png
-ddd/Screenshot from 2022-05-04 10-40-59.png
+ddd/
 main/extraction/.ignore_clipboard
 main/feature_extraction/trial.ipynb
 main/preproc/__pycache__/preproc.cpython-38.pyc
-main/extraction/__pycache__/physionet_MI.cpython-38.pyc
-main/extraction/__pycache__/physionet_MI.cpython-38.pyc
-main/extraction/__pycache__/physionet_MI.cpython-38.pyc
+main/extraction/physionet_MI.cpython-38.pyc
 reference_codes/trial.ipynb
 main/extraction/__pycache__/bci3_IVa.cpython-38.pyc
-main/extraction/__pycache__/physionet_MI.cpython-38.pyc
-main/extraction/__pycache__/physionet_MI.cpython-38.pyc
 main/extraction/__pycache__/data_extractor.cpython-38.pyc
 main/extraction/__pycache__/physionet_MI.cpython-38.pyc
 models/QEEGNet_2020.py
+./*.pyc
