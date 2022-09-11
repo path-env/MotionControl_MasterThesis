@@ -96,7 +96,10 @@ class EEGnet(nn.Module):
         x = self.dropout2(x)
         x = torch.flatten(x,1)
         x = nn.functional.relu(self.fc1(x))
-        x = torch.flatten(self.fc2(x))
+        if self.n_classes == 1:
+            x = torch.flatten(self.fc2(x))
+        else:
+            x = self.fc2(x)
         # x = torch.sigmoid(self.fc2(x))
         # x = nn.functional.softmax(self.fc2(x)).float()
         return x
