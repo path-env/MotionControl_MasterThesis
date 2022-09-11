@@ -108,7 +108,7 @@ if __name__ =='__main__':
 
     filename = 'BCI3IVa_locl_ssp_car_ica_RAW_[3]_1.npz'
     # filename = 'Physionet_locl_ssp_car_ica_RAW_EEGnet_CNN_[3, 4, 7, 8, 11, 12]_1.npz'
-    datafile = np.load(f'/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/feature_extraction/{filename}')
+    datafile = np.load(f'data/train/{filename}')
     train_data = datafile['arr_0']
     if len(train_data.shape) <4:
         train_data = np.expand_dims(train_data, axis=1)
@@ -135,7 +135,7 @@ if __name__ =='__main__':
     LRscheduler = lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.1)
 
     tb_comment = f'batch_size={nCfg.train_bs}, lr={nCfg.lr}'
-    tb_info = (f'logs/{model._get_name()}/{dCfg.name}/{filename}', tb_comment)
+    tb_info = (f'runs/{model._get_name()}/{dCfg.name}/{filename}', tb_comment)
     # tb_info = ('trial','comment')
     # train and test
     train_and_validate(data,model,loss,optimizer, LRscheduler, tb_info, dCfg, nCfg,epochs = 100)
