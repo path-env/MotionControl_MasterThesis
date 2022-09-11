@@ -261,12 +261,14 @@ class BrainSignalAnalysis():
             # self.epochs.delete()
             self.epochs = mne.read_epochs(epoch_file)
             self.classes = list(self.epochs.event_id.keys())
-            self.epochs = self.epochs[self.classes[:2]]
+            # self.epochs = self.epochs[self.classes[:2]] # for binary classification
 
         self.label = self.epochs.events[:,-1]
-        if len(np.unique(self.label)) ==3:
-            self.label = np.concatenate([np.zeros(self.epochs[self.classes[0]].get_data().shape[0]), 
-                                    np.ones(self.epochs[self.classes[1]].get_data().shape[0])])
+        if not self.label.__contains__(0):
+            self.label = self.label-1
+        # if len(np.unique(self.label)) ==3: # for binary classification
+        #     self.label = np.concatenate([np.zeros(self.epochs[self.classes[0]].get_data().shape[0]), 
+        #                             np.ones(self.epochs[self.classes[1]].get_data().shape[0])])
         # %%
         if method.find('_RAW')!=-1:
             self.train_data = self.epochs.get_data()
@@ -297,23 +299,23 @@ class BrainSignalAnalysis():
         # %%
         ## Common Spatial Patterns
         if method.find('_CSP')!=-1:
-            self.csp = CSP(n_components=self.dCfg.csp_n_comp, reg='ledoit_wolf', log=True, transform_into= 'average_power', #log=None, norm_trace=False, rank='full',cov_est = 'epoch')#
+            self.feat_ext = CSP(n_components=self.dCfg.csp_n_comp, reg='ledoit_wolf', log=True, transform_into= 'average_power', #log=None, norm_trace=False, rank='full',cov_est = 'epoch')#
                         cov_est = 'concat',rank='full', norm_trace= True)
-            self.train_data = self.csp.fit_transform(self.epochs.get_data(), self.label)
-            self.epoch_data = self.epochs.get_data()
+            # self.train_data = self.feat_ext.fit_transform(self.epochs.get_data(), self.label)
+            self.train_data = self.epochs.get_data()
 
         ## Wavelet Scattering Transform
         if method.find('_WST')!=-1:
             M,N = self.epochs.get_data().shape[1:]
-            self.scat2D = Scattering2D(J=self.dCfg.wst_scale,shape=(M,N),L=self.dCfg.wst_noAngles)
-            self.epoch_data = self.epochs.get_data().reshape(self.epochs.get_data().shape[0],-1)
-            self.train_data = np.array([0,0])
+            self.feat_ext = Scattering2D(J=self.dCfg.wst_scale,shape=(M,N),L=self.dCfg.wst_noAngles)
+            # self.epoch_data = self.epochs.get_data().reshape(self.epochs.get_data().shape[0],-1)
+            self.train_data = self.epochs.get_data()
 
         self.train_data = (self.train_data - self.train_data.min()) / (self.train_data.max() - self.train_data.min())
 
         if save_feat == True:
-            np.savez(f'main/feature_extraction/Train_{method}_{self.runs}_{self.person_id}',self.train_data, self.label)
-            print(f'Features saved to: main/feature_extraction/Train_{method}_{self.runs}_{self.person_id}')
+            np.savez(f'main/feature_extraction/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}',self.train_data, self.label)
+            print(f'Features saved to: main/feature_extraction/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}')
             
         # %%
         # classify
@@ -341,7 +343,10 @@ class BrainSignalAnalysis():
             model = eval(method.split('_')[-2:-1][0])
             model = model(n_classes, n_chan,self.dCfg.sfreq)#.float()
             # Loss function
-            loss = torch.nn.BCELoss()
+            if n_classes ==2:
+                loss = torch.nn.BCEWithLogitsLoss()
+            else:
+                loss = torch.nn.CrossEntropyLoss()
 
             # Observe that all parameters are being optimized
             optimizer = optim.SGD(model.parameters(), lr= self.nCfg.lr, momentum= self.nCfg.optim_moment)
@@ -360,36 +365,38 @@ class BrainSignalAnalysis():
             if save_model:
                 torch.save(model, f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified.pt'}")
 
-        if method == 'ML':
+        if method.find('_ML')!=-1:
             cv = ShuffleSplit(10, test_size = 0.2, random_state=1)
             # cv_split = cv.split(self.epochs.get_data(), self.label)
             # rbf = RBFSampler(gamma=1, random_state=1)
-            clf = SVC()
-            # pipe = Pipeline([('CSP', self.csp),('CLF', clf)])
-            pipe = Pipeline([('scatter', self.scat2D), ('clf', clf)])
-            scores = cross_val_score(pipe, self.epoch_data , self.label, cv = cv, verbose=False)
+            clf = eval(method.split('_')[-2:-1][0])
+            # clf = SVC()
+            # pipe = Pipeline([('CSP', self.feat_ext),('CLF', clf)])
+            pipe = Pipeline([('scatter', self.feat_ext), ('clf', clf())])
+            scores = cross_val_score(pipe, self.train_data , self.label, cv = cv, verbose=False)
             class_balance = np.mean(self.label == self.label[0])
             class_balance = max(class_balance, 1. - class_balance)
             print("Classification accuracy: %f / Chance level: %f" % (np.mean(scores),class_balance))
                            
 
 if __name__ =='__main__':
-    runs = [3]#[5, 6, 9, 10, 13, 14]
+    runs = [3]# [3, 4, 7, 8, 11, 12]
     person_id = 1
     data_cfg = BCI3Params()
     analy_cfg = globalTrial()
     net_cfg = EEGNetParams()
-    artifact_removal_methods =  'ssp_car_ica'
-    feat_extract_methods = artifact_removal_methods+'_TF'
-    classi_methods = 'EEGnet_CNN'
-    methods = 'locl_ssp_car_ica_TF_EEGnet_CNN'
+    # artifact_removal_methods =  'ssp_car_ica'
+    # feat_extract_methods = artifact_removal_methods+'_TF'
+    # classi_methods = 'EEGnet_CNN'
+    methods = 'locl_ssp_car_ica_RAW_EEGnet_CNN'
+    methods = 'locl_ssp_car_ica_WST_LDA_ML'
     raw = extractBCI3(runs , person_id)
     # raw = extractPhysionet(runs, person_id)
     
     bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg, runs, person_id)
 
-    # bsa.artifact_removal(methods, save_epochs = False)
-    # bsa.feature_extraction(methods, save_feat = True)#,
+    bsa.artifact_removal(methods, save_epochs = False)
+    bsa.feature_extraction(methods, save_feat = True)#,
         # epoch_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/preproc/BCI3_ssp_car_ica_3_P3_epo.fif')
-    bsa.classifier(methods, save_model = True,
-        feat_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/feature_extraction/Train_locl_ssp_car_ica_TF_EEGnet_CNN_[3]_1.npz')
+    bsa.classifier(methods, save_model = True)#,
+    #     feat_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/feature_extraction/Train_locl_ssp_car_ica_TF_EEGnet_CNN_[3]_1.npz')

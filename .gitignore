@@ -4,11 +4,11 @@ data/__pycache__/
 models/__pycache__/
 main/data_shredder/__pycache__/
 main/__pycache__/
-log/
+logs/
 ddd/
 main/extraction/.ignore_clipboard
 main/feature_extraction/trial.ipynb
-main/preproc/__pycache__/preproc.cpython-38.pyc
+main/preproc/__pycache__/
 main/extraction/physionet_MI.cpython-38.pyc
 reference_codes/trial.ipynb
 main/extraction/__pycache__/bci3_IVa.cpython-38.pyc

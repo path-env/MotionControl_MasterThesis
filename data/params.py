@@ -52,14 +52,14 @@ class PhysionetParams():
         self.ica_n_comp = 20
         self.csp_n_comp = 4
         self.eog_ref_ch = ['Fpz']
-        self.event_dict = dict({'T1':2, 'T2':3}) 
+        self.event_dict = dict({'T0':0, 'T1':1, 'T2':2}) 
         self.wst_scale, self.wst_noAngles = 2,8
         self.tmin, self.tmax =-2, 4
 
 #%% BCI Params
 class BCI3Params():
     def __init__(self) -> None:
-        self.name ='BCI3'
+        self.name ='BCI3IVa'
         self.sfreq = 100 #HZ
         self.inion = ['I1', 'I2']
         self.elec_lines_f = 0.51 #HZ 
@@ -67,7 +67,7 @@ class BCI3Params():
         self.ica_n_comp = 20
         self.csp_n_comp = 4
         self.eog_ref_ch = ['Fpz','Fp1','Fp2']
-        self.event_dict = dict(right = 1, foot = 3) #, test = 2)
+        self.event_dict = dict(right = 1, foot = 2) #, test = 2)
         self.wst_scale, self.wst_noAngles = 2,8
         self.tmin, self.tmax =-0.5, 1
 
