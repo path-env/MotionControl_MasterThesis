@@ -312,7 +312,8 @@ class BrainSignalAnalysis():
             self.train_data = self.epochs.get_data()
 
         self.train_data = (self.train_data - self.train_data.min()) / (self.train_data.max() - self.train_data.min())
-
+        method = method.split('_')[:-2]
+        method = '_'.join(method)
         if save_feat == True:
             np.savez(f'main/feature_extraction/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}',self.train_data, self.label)
             print(f'Features saved to: main/feature_extraction/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}')
@@ -389,7 +390,7 @@ if __name__ =='__main__':
     # feat_extract_methods = artifact_removal_methods+'_TF'
     # classi_methods = 'EEGnet_CNN'
     methods = 'locl_ssp_car_ica_RAW_EEGnet_CNN'
-    methods = 'locl_ssp_car_ica_WST_LDA_ML'
+    methods = 'locl_ssp_car_ica_CSP_LDA_ML'
     raw = extractBCI3(runs , person_id)
     # raw = extractPhysionet(runs, person_id)
     
