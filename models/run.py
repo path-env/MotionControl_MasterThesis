@@ -20,7 +20,7 @@ if __name__ =='__main__':
     dCfg = PhysionetParams()
     nCfg = EEGNetParams()
 
-    filename = 'Physionet_locl_ssp_car_ica_TF_[3, 4, 7, 8, 11, 12]_1.npz'
+    filename = 'Physionet_locl_ssp_car_ica_RAW_[3, 4, 7, 8, 11, 12]_1.npz'
     # filename = 'Physionet_locl_ssp_car_ica_RAW_EEGnet_CNN_[3, 4, 7, 8, 11, 12]_1.npz'
 
     train = np.load(f'/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/data/train/{filename}')
