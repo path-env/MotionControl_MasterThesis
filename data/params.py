@@ -16,7 +16,7 @@ class EEGNetParams():
         self.name = 'EEGNet'
         self.epochs = 100
         self.val_split = 0.25
-        self.test_split = 0.1
+        self.test_split = 0
         self.val_bs = 3
         self.train_bs = 3
         self.eeg_sample_count = 240 # How many samples are we training
@@ -52,9 +52,10 @@ class PhysionetParams():
         self.ica_n_comp = 20
         self.csp_n_comp = 4
         self.eog_ref_ch = ['Fpz']
-        self.event_dict = dict({'T0':0, 'T1':1, 'T2':2}) 
+        self.event_dict = dict({'T0':1, 'T1':2, 'T2':3}) 
         self.wst_scale, self.wst_noAngles = 2,8
         self.tmin, self.tmax =-2, 4
+        self.test_split = 0.1
 
 #%% BCI Params
 class BCI3Params():
@@ -62,7 +63,7 @@ class BCI3Params():
         self.name ='BCI3IVa'
         self.sfreq = 100 #HZ
         self.inion = ['I1', 'I2']
-        self.elec_lines_f = 50 #HZ 
+        self.elec_lines_f = 49 #HZ  # Error with filtering
         self.ssp_n_eeg = 2 # No . of EEG SSP components
         self.ica_n_comp = 20
         self.csp_n_comp = 4
@@ -70,6 +71,7 @@ class BCI3Params():
         self.event_dict = dict(right = 1, foot = 2) #, test = 2)
         self.wst_scale, self.wst_noAngles = 2,8
         self.tmin, self.tmax =-0.5, 1
+        self.test_split = 0.1
 
 
 
