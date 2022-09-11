@@ -62,7 +62,7 @@ class BCI3Params():
         self.name ='BCI3IVa'
         self.sfreq = 100 #HZ
         self.inion = ['I1', 'I2']
-        self.elec_lines_f = 0.51 #HZ 
+        self.elec_lines_f = 50 #HZ 
         self.ssp_n_eeg = 2 # No . of EEG SSP components
         self.ica_n_comp = 20
         self.csp_n_comp = 4

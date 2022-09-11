@@ -9,20 +9,23 @@ import torch.optim.lr_scheduler as lr_scheduler
 import numpy as np
 
 from models.train_net import train_and_validate
-from data.params import BCI3Params, EEGNetParams
+from data.params import BCI3Params, EEGNetParams, PhysionetParams
 from main.extraction.data_extractor import data_container
 from models.profile_net import profiler
 
 class EEGnet(nn.Module):
-    def __init__(self, n_classes, n_chan, sf) -> None:
+    def __init__(self, n_classes, n_chan, n_T, sf, F1 = 10, F2 = 22, D =4, dt = 0.379) -> None:
         super(EEGnet, self).__init__()
         if (n_classes) == 2:
             n_classes = 1
-        self.F1 = 30
-        self.F2 = 20
-        self.D = 3
+        self.n_classes = n_classes
         self.C = n_chan
+        self.T = n_T
         self.sf = sf
+        self.F1 = F1
+        self.F2 = F2
+        self.D = D
+        self.dt = dt
         self.filterlength = int(np.round(self.sf/2))
 
         '''        
@@ -60,18 +63,18 @@ class EEGnet(nn.Module):
                                     kernel_size=(self.C,1),groups=self.F1, bias=False)
         self.batchnorm11 = nn.BatchNorm2d(self.D*self.F1)
         self.averagePool1 = nn.AvgPool2d((1,4))
-        self.dropout1 = nn.Dropout(0.5)
+        self.dropout1 = nn.Dropout(self.dt)
 
         #Block2
-        self.sepconv2d1 = nn.Conv2d(self.D*self.F1, self.D*self.F1, (1,14), padding='same', bias=False,
+        self.sepconv2d1 = nn.Conv2d(self.D*self.F1, self.D*self.F1, (1,self.filterlength), padding='same', bias=False,
                             groups=self.D*self.F1) # kernel = freq of interest//2
         self.sepconv2d2 = nn.Conv2d(self.D*self.F1,self.F2, kernel_size=(1,1), bias=False)
         self.batchnorm2 = nn.BatchNorm2d(self.F2)
         self.averagePool2 = nn.AvgPool2d((1,8))
-        self.dropout2 = nn.Dropout(0.5)
+        self.dropout2 = nn.Dropout(self.dt)
 
         # FC
-        self.fc1 = nn.LazyLinear(self.F2)
+        self.fc1 = nn.Linear((self.F2*(self.T//32)), self.F2)
         # self.fc1 = nn.Linear(self.F2*1*1, self.F2)
         self.fc2 = nn.Linear(self.F2, n_classes)
 
@@ -93,15 +96,18 @@ class EEGnet(nn.Module):
         x = self.dropout2(x)
         x = torch.flatten(x,1)
         x = nn.functional.relu(self.fc1(x))
-        x = torch.sigmoid(self.fc2(x))
+        x = torch.flatten(self.fc2(x))
+        # x = torch.sigmoid(self.fc2(x))
         # x = nn.functional.softmax(self.fc2(x)).float()
         return x
         
 if __name__ =='__main__':
     dCfg = BCI3Params()
     nCfg = EEGNetParams()
+    nCfg.lr = 0.15448 
 
-    filename = 'Train_locl_ssp_car_ica_TF_EEGnet_CNN_[3]_1.npz'
+    filename = 'BCI3IVa_locl_ssp_car_ica_RAW_[3]_1.npz'
+    # filename = 'Physionet_locl_ssp_car_ica_RAW_EEGnet_CNN_[3, 4, 7, 8, 11, 12]_1.npz'
     datafile = np.load(f'/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/feature_extraction/{filename}')
     train_data = datafile['arr_0']
     if len(train_data.shape) <4:
@@ -113,22 +119,25 @@ if __name__ =='__main__':
     bs, lr = 1, 0.001
     data = data_container(train_data, labels, nCfg)
 
-    _,_,n_chan,_ = data.x.shape
-    model =  EEGnet(n_classes,n_chan,dCfg.sfreq)
+    _,_,n_chan,n_T = data.x.shape
+    model =  EEGnet(n_classes,n_chan,n_T ,dCfg.sfreq)
     # print(model)
     # Loss function
-    loss = torch.nn.BCELoss()
+    if n_classes == 2:
+        loss = torch.nn.BCEWithLogitsLoss() # No sigmoid required at the last layer & in train loop, Binary classification
+    else:
+        loss = torch.nn.CrossEntropyLoss() # No softmax required at the last layer, Multiclass classification
 
     # Observe that all parameters are being optimized
-    optimizer = optim.Adam(model.parameters(), lr=nCfg.lr)
+    optimizer = optim.ASGD(model.parameters(), lr=nCfg.lr)
 
     # Decay LR by a factor of 0.1 every 7 epochs
-    LRscheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+    LRscheduler = lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.1)
 
     tb_comment = f'batch_size={nCfg.train_bs}, lr={nCfg.lr}'
-    tb_info = (f'log/{model._get_name()}/{dCfg.name}/{filename}', tb_comment)
+    tb_info = (f'logs/{model._get_name()}/{dCfg.name}/{filename}', tb_comment)
     # tb_info = ('trial','comment')
     # train and test
-    train_and_validate(data,model,loss,optimizer, LRscheduler, tb_info, dCfg, nCfg,epochs = 10)
+    train_and_validate(data,model,loss,optimizer, LRscheduler, tb_info, dCfg, nCfg,epochs = 100)
     # profiler(model, optimizer, loss, data, LRscheduler, tb_info[0])
-    # torch.save(model,f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified.pt'}")
+    torch.save(model,f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified.pt'}")
