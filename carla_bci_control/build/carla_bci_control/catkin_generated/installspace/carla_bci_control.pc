@@ -1,0 +1,8 @@
+prefix=/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/carla_bci_control/install
+
+Name: carla_bci_control
+Description: Description of carla_bci_control
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

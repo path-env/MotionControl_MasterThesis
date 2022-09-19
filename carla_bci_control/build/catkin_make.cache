@@ -1,0 +1,2 @@
+carla_bci_control
+-DCATKIN_DEVEL_PREFIX=/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/carla_bci_control/devel -DCMAKE_INSTALL_PREFIX=/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/carla_bci_control/install -G Unix Makefiles
