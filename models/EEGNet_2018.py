@@ -28,7 +28,7 @@ class EEGnet(nn.Module):
         self.dt = dt
         self.filterlength = int(np.round(self.sf/2))
 
-        '''        
+        """        
         # self.conv = nn.Sequential(
         #     nn.Conv2d(1,self.F1,(1,self.filterlength)),
         #     nn.ReLU(),
@@ -54,7 +54,8 @@ class EEGnet(nn.Module):
         # self.classifier =nn.Sequential(
         #     nn.Linear(self.F2*(self.T//2), self.F2*(self.T//2)),
         #     nn.Linear(self.F2*(self.T//2), 2),
-        #     nn.Softmax() )'''
+        #     nn.Softmax() )
+        """
 
         # Block1
         self.conv2d1 = nn.Conv2d(1,self.F1,(1,self.filterlength), padding='same', bias=False) # kernel = sfreq//2
