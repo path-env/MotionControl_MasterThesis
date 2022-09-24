@@ -30,7 +30,8 @@ class data_container(Dataset):
                 print('Input feature shape is wrong')
                 sys.exit(1)
             self.x = torch.tensor(feat)#.unsqueeze(1)
-            label[label==3] = 0
+            if not label.__contains__(0):
+                label = label-1
             self.y = torch.tensor(label)
     
     def __getitem__(self, index):
