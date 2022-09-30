@@ -16,6 +16,17 @@ from ros_compatibility.qos import QoSProfile, DurabilityPolicy
 import numpy as np
 import torch
 
+"""
+# commands to start carla - BCI - ROS
+
+OpenGUI to check if electrodes are not railed.
+
+Run carla simulator: ./Carla.sh
+
+roslaunch carla_bci_control carla_ros_bridge_with_bci_car_vehicle.launch 
+
+Use keys P, B, M for toggling  manual control, autopilot off ....
+"""
 
 try:
     import pygame
@@ -58,7 +69,7 @@ class BCIControl(object):
         self.node = node
         jit_model = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/EEGnet_md_script.pt'
         self.bci_interface = BCI(jit_model)
-        self._autopilot_enabled = False
+        self._autopilot_enabled = True
         self._control = CarlaEgoVehicleControl()
         self._steer_cache = 0.0
 
@@ -153,7 +164,7 @@ class BCIControl(object):
         """
         parse key events
         """
-        steer_pro,_ = self.bci_interface.getCmd()
+        steer_prob,_ = self.bci_interface.getCmd()
         self._control.throttle = 1.0 if keys[K_UP] or keys[K_w] else 0.2
         steer_increment = 5e-4 * milliseconds
 
@@ -186,7 +197,7 @@ class BCI():
     def __init__(self, jit_model) -> None:
         self.role_name = 'bci_car'
         # self._init_ros_control()
-        # self._bf_comm()
+        self._bf_comm()
         # self._lsl_comm()
 
         self.steer = 0
@@ -199,16 +210,22 @@ class BCI():
         EPOCH_len = 3 #sec
         freq = 110
         self.n_samp = 1 + EPOCH_len * freq
-
+        
+    def __del__(self):
+        print('stopperd')
+        # self.board.release_session()
+        self.board.stop_stream()
+    
     def _bf_comm(self):
         # 2, Using Brain FLow
         params = BrainFlowInputParams ()
         params.timeout = 10
         params.serial_port = '/dev/ttyUSB0'
         self.eeg_ch = BoardShim.get_eeg_channels(BoardIds.CYTON_DAISY_BOARD.value)
-        self.board = BoardShim (BoardIds.CYTON_DAISY_BOARD, params)
+        self.board = BoardShim(BoardIds.CYTON_DAISY_BOARD, params)
         try:
             self.board.prepare_session()
+            # time.sleep(2)
         except Exception as e:
             print('board is off')
             exit(1)
@@ -255,13 +272,12 @@ class BCI():
     def _get_data(self, bfdummy): # ip stream has no filter, butterflow filter added manually
         data = self.board.get_current_board_data(num_samples= self.n_samp)
         # print(data.shape)
-        eeg_TS = data[self.eeg_ch, :]
+        eeg_TS = data[self.eeg_ch, :] /1000000
         # eeg_TS = eeg_TS / 1000000 # BrainFlow returns uV, convert to V for MNE
         # print(eeg_TS.shape)
-        eeg_channels = BoardShim.get_eeg_channels(BoardIds.CYTON_DAISY_BOARD.value)
-        for i in range(len(eeg_channels)):
-            bf.DataFilter.perform_bandpass(eeg_TS[i], self.s_freq, 0.5, 50,4, 0, ripple=0.1)
-
+        # eeg_channels = BoardShim.get_eeg_channels(BoardIds.CYTON_DAISY_BOARD.value)
+        for i in range(len(self.eeg_ch)):
+            bf.DataFilter.perform_bandpass(eeg_TS[i], self.s_freq, 0.5, 50,4, 0, ripple=0.5)
         if eeg_TS.shape[1] != self.n_samp:
             return np.zeros((16,self.n_samp))
         else:
@@ -299,7 +315,7 @@ class BCI():
 
         # self.control.steer = steer
         # self.egoCMD.publish(self.control) 
-        return prob, eeg_TS
+        return prob, self.eeg_TS
 
 # def main(jit_model):
 #     obj = BCIcontrol(jit_model)
