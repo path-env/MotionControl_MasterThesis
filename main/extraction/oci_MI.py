@@ -12,7 +12,7 @@ import mne
 from sklearn.model_selection import train_test_split
 
 def extractOCI(runs, person_id):
-    filename = 'Raw_Arina_reoorganised2.npz'
+    filename = 'Raw_P1_reoorganised2.npz'
     train = np.load(f'/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/data/{filename}', allow_pickle=True)
     train_x = np.float64(train['arr_0'])
     event_t = train['arr_1']
