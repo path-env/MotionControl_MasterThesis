@@ -84,9 +84,11 @@ class EEGnet(nn.Module):
         # x = self.depthwiseConv2D(x)
         # x = self.separableConv2D(x)
         # x = self.classifier(x)
-        x = nn.functional.relu(self.conv2d1(x))
-        x = self.batchnorm1(x)
-        x = nn.functional.relu(self.depthconv2d1(x))
+
+        # x with RAW/TF batch x cCH x EEGch x ts
+        x = nn.functional.relu(self.conv2d1(x)) # bs x F1 x EEGch x ts
+        x = self.batchnorm1(x) # bs x F1 x EEGch x ts
+        x = nn.functional.relu(self.depthconv2d1(x))# bs x F1 x EEGch x ts
         x = nn.functional.elu(self.batchnorm11(x))
         x = self.averagePool1(x)
         x = self.dropout1(x)
