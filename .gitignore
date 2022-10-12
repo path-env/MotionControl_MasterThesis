@@ -9,10 +9,11 @@ ddd/
 main/extraction/.ignore_clipboard
 main/feature_extraction/trial.ipynb
 main/preproc/__pycache__/
-main/extraction/physionet_MI.cpython-38.pyc
+main/extraction/__pycache__/
 reference_codes/trial.ipynb
 main/extraction/__pycache__/bci3_IVa.cpython-38.pyc
 main/extraction/__pycache__/data_extractor.cpython-38.pyc
 main/extraction/__pycache__/physionet_MI.cpython-38.pyc
 models/QEEGNet_2020.py
 ./*.pyc
+carla_bci_control/src/carla_bci_control/src/__pycache__/bci2ros.cpython-38.pyc
