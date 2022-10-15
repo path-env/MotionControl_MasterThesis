@@ -13,11 +13,10 @@ from torch.utils.data.sampler import SubsetRandomSampler
 # from data_shredder.physionet import extractPhysioNet
 from data.fake_data import extractFakeData
 
-class data_container(Dataset):
-    def __init__(self, feat, label, nCfg, check_net = False) -> None:
+class DataContainer(Dataset):
+    def __init__(self, feat, label, check_net = False) -> None:
         super().__init__()
         self.channels = 64
-        self.nCfg = nCfg
         if check_net:
             train, test = extractFakeData()            
             self.x = train[0]
@@ -37,28 +36,43 @@ class data_container(Dataset):
     def __getitem__(self, index):
         return self.x[index,:], self.y[index]
     
+    def __getall__(self):
+        return self.x, self.y
+    
     def __len__(self):
         return len(self.y)
-    
-    def get_loaders(self, data, shuffle = True):
-        ds_size = len(data)
-        idx = list(range(ds_size))
-        if shuffle :
-            # np.random.seed(random_seed)
-            np.random.shuffle(idx)
 
-        val_split = int(np.floor(self.nCfg.val_split * ds_size))
-        test_split = int(np.floor(self.nCfg.test_split  * ds_size))
-        val_idx, test_idx,train_idx = idx[:val_split], idx[val_split:val_split+test_split], idx[val_split+test_split:]
+class DataDispenser():
+    def __init__(self, dataset, nCfg) -> None:
+        self.nCfg = nCfg
+        self.dataset = dataset
+        self.train_idx = []
+        self.val_idx = []
+
+    def get_loaders(self, shuffle = True):
+        # ds_size = len(data)
+        # idx = list(range(ds_size))
+        # if shuffle :
+        #     # np.random.seed(random_seed)
+        #     np.random.shuffle(idx)
+
+        # val_split = int(np.floor(self.nCfg.val_split * ds_size))
+        # test_split = int(np.floor(self.nCfg.test_split  * ds_size))
+        # val_idx, test_idx,train_idx = idx[:val_split], idx[val_split:val_split+test_split], idx[val_split+test_split:]
+
+        # val_split = int(np.floor(self.nCfg.val_split * ds_size))
+        test_split = int(np.floor(self.nCfg.test_split  * len(self.val_idx)))
+        val_idx, test_idx = self.val_idx[test_split:], self.val_idx[:test_split]
+        # val_idx, test_idx,train_idx = idx[:val_split], idx[val_split:val_split+test_split], idx[val_split+test_split:]
 
         # Train and validate shuffle split
-        train_sampler = SubsetRandomSampler(train_idx)
+        train_sampler = SubsetRandomSampler(self.train_idx)
         valid_sampler = SubsetRandomSampler(val_idx)
         test_sampler = SubsetRandomSampler(test_idx)
 
-        train_loader = DataLoader(data, batch_size= self.nCfg.train_bs, sampler=train_sampler, pin_memory=True, num_workers= self.nCfg.num_wrkrs)
-        validation_loader = DataLoader(data, batch_size= self.nCfg.val_bs, sampler=valid_sampler, pin_memory=True, num_workers= self.nCfg.num_wrkrs)
-        test_loader = DataLoader(data, batch_size=1, sampler=test_sampler, pin_memory=True, num_workers= self.nCfg.num_wrkrs)
+        train_loader = DataLoader(self.dataset, batch_size= self.nCfg.train_bs, sampler=train_sampler, pin_memory=True, num_workers= self.nCfg.num_wrkrs)
+        validation_loader = DataLoader(self.dataset, batch_size= self.nCfg.val_bs, sampler=valid_sampler, pin_memory=True, num_workers= self.nCfg.num_wrkrs)
+        test_loader = DataLoader(self.dataset, batch_size=1, sampler=test_sampler, pin_memory=True, num_workers= self.nCfg.num_wrkrs)
         return train_loader, validation_loader, test_loader
 
     def __test_train_split__(self, feat, label):
@@ -77,7 +91,7 @@ if __name__ == "__main__":
     nCfg = EEGNetParams()
     feat = np.random.randn(30,64,227)
     labels = np.concatenate([-np.ones(15), np.ones(15)])
-    data = data_container(feat, labels, nCfg, check_net = False)
+    data = DataContainer(feat, labels, nCfg, check_net = False)
     tr, val,test = data.get_loaders(data)
     validation_split = 0.25
     shuffle_dataset = True
