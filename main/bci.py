@@ -7,21 +7,19 @@
 # %matplotlib tk 
 
 # %%
-import sys
-from matplotlib import cm
-sys.path.append('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis')
-
-# %%
 import mne
 import numpy as np
 import pandas as pd
 from PIL import Image
 import matplotlib.pyplot as plt
-
+from matplotlib import cm
+from sklearn.preprocessing import MinMaxScaler
 #Local Imports
+
 # from main.extraction.physionet_MI import  extractPhysionet, extractBCI3
 from data import brain_atlas  as bm
-from data.params import BCI3Params, EEGNetParams, PhysionetParams, globalTrial
+from data.params import BCI3Params, EEGNetParams, OCIParams, PhysionetParams, globalTrial
+from extraction.oci_MI import extractOCI
 # Data Extraction
 from main.extraction.bci3_IVa import extractBCI3
 from main.extraction.physionet_MI import extractPhysionet
@@ -29,8 +27,9 @@ from main.extraction.physionet_MI import extractPhysionet
 # Feature Extraction
 from mne.time_frequency import tfr_morlet
 from mne.decoding import CSP
-
+from sklearn.model_selection import train_test_split
 from kymatio.sklearn import Scattering2D
+from scipy import stats, signal
 
 # Classifier
 import torch, torchvision
@@ -52,7 +51,7 @@ from sklearn.tree import DecisionTreeClassifier as DTC
 from sklearn.svm import SVC
 from sklearn.kernel_approximation import RBFSampler
 
-from main.extraction.data_extractor import data_container
+from main.extraction.data_extractor import DataContainer
 from models.neurotec_edu import Neurotech_net
 from models.MI_CNN_WT_2019 import TFnet
 from models.EEGNet_2018 import EEGnet
@@ -82,11 +81,10 @@ class BrainSignalAnalysis():
         rawfltrd = raw.filter(L_cutoff, H_cutoff, verbose= False, fir_design='firwin', skip_by_annotation='edge').copy()
 
         # Referncing to reference electrodes
-        rawfltrd = rawfltrd.set_eeg_reference(self.dCfg.inion)
+        # rawfltrd = rawfltrd.set_eeg_reference(self.dCfg.inion)
         # Check the Power spectral density
         # rawfltrd.plot_psd();
-
-        pick_ch = bm.C_Channels  # Considering only the channels that map to topo map functionality
+        pick_ch = bm.oci_Channels  # Considering only the channels that map to topo map functionality
         # rawfltrd.pick_channels(pick_ch); # inplace
         # Channel names to Indices
         ch_names = rawfltrd.ch_names
@@ -107,8 +105,8 @@ class BrainSignalAnalysis():
         self.rawfltrd = rawfltrd
     
     def _matrix2Image(self):
-            # self.train_data = scaler.fit_transform(self.train_data)
-            cmap = np.uint8(cm.gist_earth(self.train_data)*255)[:,:,:,:3]
+            # self.train_x = scaler.fit_transform(self.train_x)
+            cmap = np.uint8(cm.gist_earth(self.train_x)*255)[:,:,:,:3]
             cmap = np.swapaxes(cmap, 1,3)
             cmap = np.swapaxes(cmap, 2,3)
 
@@ -120,16 +118,16 @@ class BrainSignalAnalysis():
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             ])
 
-            self.train_data = torch.from_numpy(cmap.astype(np.float32))
+            self.train_x = torch.from_numpy(cmap.astype(np.float32))
             # input_image = Image.fromarray(cmap)
-            input_tensor = preprocess(self.train_data)
+            input_tensor = preprocess(self.train_x)
             input_tensor-=input_tensor.min()
             input_tensor/=input_tensor.max()
-            self.train_data = input_tensor #.unsqueeze(0) # create a mini-batch as expected by the model
+            self.train_x = input_tensor #.unsqueeze(0) # create a mini-batch as expected by the model
 
             # # Plot the proceessed image
             # import cv2
-            # test = self.train_data[0,:,:,:].swap_axes(0,2).numpy()
+            # test = self.train_x[0,:,:,:].swap_axes(0,2).numpy()
             # cv2.imshow('Test', test)
             # cv2.waitKey(0)
             return None
@@ -138,8 +136,9 @@ class BrainSignalAnalysis():
         # Remove the artifacts
     def artifact_removal(self, method, save_epochs = False):
         rawfltrd = self.rawfltrd.copy()
+        rawfltrd = rawfltrd.resample(80) # for OpenBCI headset
         if method.find('locl')!= -1:
-            pick_ch = bm.C_Channels  # Considering only the channels that map to topo map functionality
+            pick_ch = bm.oci_Channels  # Considering only the channels that map to topo map functionality
             rawfltrd.pick_channels(pick_ch); # inplace
 
         if method.find('ssp')!=-1:
@@ -223,9 +222,23 @@ class BrainSignalAnalysis():
         event_ids = self.dCfg.event_dict# Replacing the existing event ids
         self.classes = list(event_ids.keys())
         # epochs1 = mne.Epochs(rawfltrd, events= event_marker, event_id= event_ids, baseline = (0,0))
-        self.epochs = mne.Epochs(rawfltrd, events= event_marker, tmin= self.dCfg.tmin, tmax=self.dCfg.tmax, event_id= event_ids, verbose= True, proj= True, reject = None) # Baseline is default (None,0)
-        self.epochs.equalize_event_counts() # Shape = epochs x chan x timepnts
-
+        epochs = mne.Epochs(rawfltrd, events= event_marker, tmin= self.dCfg.tmin, tmax=self.dCfg.tmax, event_id= event_ids, 
+                        verbose= True, proj= True, reject = None, baseline=(None,0), preload = True) # Baseline is default (None,0)
+        # epochs.equalize_event_counts() # Shape = epochs x chan x timepnts
+        self.rawfltrd = rawfltrd
+        # # Normalizing
+        # x = epochs.get_data()
+        # for ep in range(x.shape[0]):
+        #     for ch in range(x.shape[1]):
+        #         x[ep,ch,:] = (x[ep,ch,:] - x[ep,ch,:].min()) / (x[ep,ch,:].max() - x[ep,ch,:].min())
+        #     # try:
+        #     #     train_x[j,:]-= np.mean(train_x[j,:])
+        #     #     train_x[j,:] = (train_x[j,:]/np.std(train_x[j,:]) )/3
+        #     # except Exception as e:
+        #     #     train_x[j,:] =0
+        # epochs.load_data()
+        # epochs._data = x
+        self.epochs = epochs
         # Evoked data
         # T0 = epochs['T0'].average() # Shape = chan x timepnts
         # T1 = epochs['T1'].average()
@@ -263,15 +276,15 @@ class BrainSignalAnalysis():
             self.classes = list(self.epochs.event_id.keys())
             # self.epochs = self.epochs[self.classes[:2]] # for binary classification
 
-        self.label = self.epochs.events[:,-1]
-        if not self.label.__contains__(0):
-            self.label = self.label-1
-        # if len(np.unique(self.label)) ==3: # for binary classification
-        #     self.label = np.concatenate([np.zeros(self.epochs[self.classes[0]].get_data().shape[0]), 
+        self.labels = self.epochs.events[:,-1]
+        if not self.labels.__contains__(0):
+            self.labels = self.labels-1
+        # if len(np.unique(self.labels)) ==3: # for binary classification
+        #     self.labels = np.concatenate([np.zeros(self.epochs[self.classes[0]].get_data().shape[0]), 
         #                             np.ones(self.epochs[self.classes[1]].get_data().shape[0])])
         # %%
         if method.find('_RAW')!=-1:
-            self.train_data = self.epochs.get_data()
+            self.features = self.epochs.get_data()
 
         # %% 
         ## Time- Frequency
@@ -291,40 +304,132 @@ class BrainSignalAnalysis():
                     powerdB[ep,f,:] = 10*np.log10(activity/baseline)
                     powerEp[ep,f,:] = activity
 
-            self.train_data = powerdB
-            # train_data = train_data.reshape(train_data.shape[0],-1)           
-            # print(self.train_data.shape)
-            # print(self.label.shape)
+            self.features = powerdB
+            # features = features.reshape(features.shape[0],-1)           
+            # print(self.features.shape)
+            # print(self.labels.shape)
 
         # %%
         ## Common Spatial Patterns
         if method.find('_CSP')!=-1:
             self.feat_ext = CSP(n_components=self.dCfg.csp_n_comp, reg='ledoit_wolf', log=True, transform_into= 'average_power', #log=None, norm_trace=False, rank='full',cov_est = 'epoch')#
                         cov_est = 'concat',rank='full', norm_trace= True)
-            # self.train_data = self.feat_ext.fit_transform(self.epochs.get_data(), self.label)
-            self.train_data = self.epochs.get_data()
+            # self.features = self.feat_ext.fit_transform(self.epochs.get_data(), self.labels)
+            self.features = self.epochs.get_data()
 
         ## Wavelet Scattering Transform
         if method.find('_WST')!=-1:
             M,N = self.epochs.get_data().shape[1:]
             self.feat_ext = Scattering2D(J=self.dCfg.wst_scale,shape=(M,N),L=self.dCfg.wst_noAngles)
             # self.epoch_data = self.epochs.get_data().reshape(self.epochs.get_data().shape[0],-1)
-            self.train_data = self.epochs.get_data()
+            self.features = self.epochs.get_data()
 
-        self.train_data = (self.train_data - self.train_data.min()) / (self.train_data.max() - self.train_data.min())
+        ## Mean, skewness, variance, kurtosis, zerocrossing, area under signal, peak to peak, 
+        ## amplitude spectral density, power spectral density, power of each freq band
+        if method.find('_STAT')!=-1:
+            # break into segments
+            epoch_data = self.epochs.get_data()
+            n_segments = 5 #*2
+            n_s,n_ch,n_T = epoch_data.shape
+            window_size = int((n_T/n_segments)) # 50% overlap
+            t = 0
+            samples = []
+            for ep in range(n_s):
+                features = []
+                for ch in range(n_ch):
+                    ch_feat = []
+                    seg_size = ((int(window_size//2)))*2 + 8
+                    for t in range(0,n_T, int(window_size//2)):
+                        seg = epoch_data[ep,ch,t:t+window_size]
+                        # mean
+                        M = np.mean(seg)# , axis = 2)
+                        # variance
+                        V = np.var(seg) #, axis =2)
+                        # skew
+                        S = stats.skew(seg) #, axis = 2)
+                        # kurtosis
+                        K = stats.kurtosis(seg)#, axis = 2)
+                        # zerocrossing
+                        Z = len(np.where(seg>0)[0])
+                        # area under signal
+                        A = np.trapz(seg, dx =1 )#, axis =2)
+                        # p2p
+                        P = np.max(seg) -np.min(seg)#, axis =2) - np.min(seg, axis =2)
+                        # Amp spectral den
+                        Psd = signal.periodogram(seg)[1]#, axis =2)
+                        Asd = np.sqrt(Psd)
+                        Psd = ((Psd - Psd.min()) / (Psd.max() - Psd.min()).tolist())[1:]
+                        Asd = ((Asd - Asd.min()) / (Asd.max() - Asd.min()).tolist())[1:]
+                        # power 
+                        PFB = np.trapz(Psd)#, axis=2)
+                    
+                        seg = [M,V,S,K,Z,A,P,*Psd,*Asd,PFB]
+                        if len(seg) == seg_size:
+                            ch_feat.append(list(seg))
+                            
+                    features.append(ch_feat)
+                samples.append(features)
+            self.features = np.array(samples)
+
+            n_s,n_ch,n_seg,n_f = self.features.shape
+            # Feature Normalisation acrosss channels for spatial info
+            for ep in range(n_s):
+                for ch in range(n_ch):
+                    for f in range(n_f):
+                        self.features[ep,ch,:,f] = (self.features[ep,ch,:,f] - self.features[ep,ch,:,f].min(axis=-1)) / (self.features[ep,ch,:,f].max(axis=-1) - self.features[ep,ch,:,f].min(axis=-1))
+
+        if method.find('_IMG')!=-1:
+            # nchan = 16
+           
+            map = np.zeros((7,8))
+            positions = [[0,3], [0,4], [1,2], [1,5], 
+                    [2,1],[2,6],[3,0],[3,2], [3, 5], [6,7],
+                    [4,1],[4,6], [5,2], [5,5],[6,3], [6,4]]
+            map_idx = [3,4,10,13,17,22,24,26,29,31,33,38,42,45,51,52]
+            epoch = self.epochs.load_data()
+            epoch = self.epochs.reorder_channels(bm.oci_Channels)
+            data = epoch.get_data()
+            features = np.zeros((data.shape[0], data.shape[-1],7,8))
+            for ep in range(data.shape[0]):
+                for t in range(data.shape[-1]):
+                    np.put(map,map_idx,data[ep,:,t])
+                    features[ep, t,:,:] =  map 
+
+            features = [features[:,i : i + self.dCfg.IMG_size] for i in range(0, len(features), self.dCfg.IMG_ovrlp)]
+            try:
+                features = np.stack(features).swapaxes(0,1) # ep x n_seg x step x *IMG
+            except ValueError:
+                features = features[:-1]
+                features = np.stack(features).swapaxes(0,1) 
+            
+            sh = features.shape
+            self.features = features.reshape(sh[0]*sh[1], sh[2], sh[3], sh[4])# ep x (n_segxstep) x n_row x n_col
+            self.labels = self.labels.repeat(sh[1])
+
+        # Test train split
+        self.train_x, self.test_x,self.train_y,self.test_y = train_test_split(self.features, self.labels, 
+                                   test_size= self.dCfg.test_split, stratify= self.labels, random_state= 42)
+
+        if len(self.train_x.shape) <4:
+            self.train_x = np.expand_dims(self.train_x, axis=1)
+            self.test_x = np.expand_dims(self.test_x, axis=1)
+        # self.train_x = (self.train_x - self.train_x.min()) / (self.train_x.max() - self.train_x.min())
+        # self.test_x = (self.test_x - self.test_x.min()) / (self.test_x.max() - self.test_x.min())
+
         method = method.split('_')[:-2]
         method = '_'.join(method)
         if save_feat == True:
-            np.savez(f'main/feature_extraction/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}',self.train_data, self.label)
-            print(f'Features saved to: main/feature_extraction/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}')
+            np.savez(f'data/train/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}',self.train_x, self.train_y)
+            np.savez(f'data/test/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}',self.test_x, self.test_y)            
+            print(f'Features saved to: data/test|train/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}')
             
         # %%
         # classify
     def classifier(self, method, save_results = True, save_model = True, feat_file = None):
         if feat_file is not None:
             datafile = np.load(f'{feat_file}')
-            self.train_data = datafile['arr_0']
-            self.label = datafile['arr_1']
+            self.train_x = datafile['arr_0']
+            self.train_y = datafile['arr_1']
 
         if method.find('_CNN')!=-1:
             # self._matrix2Image()
@@ -333,16 +438,16 @@ class BrainSignalAnalysis():
             learning_rate = 0.001
 
             # Add channel dim for convolutions
-            if len(self.train_data.shape) <4:
-                self.train_data = np.expand_dims(self.train_data, axis=1)
+            if len(self.train_x.shape) <4:
+                self.train_x = np.expand_dims(self.train_x, axis=1)
             # Input data & labels
-            data = data_container(self.train_data, self.label, self.nCfg)
+            data = DataContainer(self.train_x, self.train_y, self.nCfg)
             _,_,n_chan,n_T = data.x.shape
-            n_classes = np.unique(self.label).shape[0]
+            n_classes = np.unique(self.train_y).shape[0]
 
             # Model
             model = eval(method.split('_')[-2:-1][0])
-            model = model(n_classes, n_chan,self.dCfg.sfreq)#.float()
+            model = model(n_classes, n_chan, n_T, self.dCfg.sfreq)#.float()
             # Loss function
             if n_classes ==2:
                 loss = torch.nn.BCEWithLogitsLoss()
@@ -368,36 +473,38 @@ class BrainSignalAnalysis():
 
         if method.find('_ML')!=-1:
             cv = ShuffleSplit(10, test_size = 0.2, random_state=1)
-            # cv_split = cv.split(self.epochs.get_data(), self.label)
+            # cv_split = cv.split(self.epochs.get_data(), self.train_y)
             # rbf = RBFSampler(gamma=1, random_state=1)
             clf = eval(method.split('_')[-2:-1][0])
             # clf = SVC()
             # pipe = Pipeline([('CSP', self.feat_ext),('CLF', clf)])
             pipe = Pipeline([('scatter', self.feat_ext), ('clf', clf())])
-            scores = cross_val_score(pipe, self.train_data , self.label, cv = cv, verbose=False)
-            class_balance = np.mean(self.label == self.label[0])
+            scores = cross_val_score(pipe, self.train_x , self.train_y, cv = cv, verbose=False)
+            class_balance = np.mean(self.train_y == self.train_y[0])
             class_balance = max(class_balance, 1. - class_balance)
             print("Classification accuracy: %f / Chance level: %f" % (np.mean(scores),class_balance))
                            
 
 if __name__ =='__main__':
-    runs = [3]# [3, 4, 7, 8, 11, 12]
+    runs = [3, 4, 7, 8, 11, 12]
     person_id = 1
-    data_cfg = BCI3Params()
+    data_cfg = OCIParams()
+    # raw = extractBCI3(runs , person_id)
+    # raw = extractPhysionet(runs, person_id)
+    raw = extractOCI(runs, person_id)
     analy_cfg = globalTrial()
     net_cfg = EEGNetParams()
     # artifact_removal_methods =  'ssp_car_ica'
     # feat_extract_methods = artifact_removal_methods+'_TF'
     # classi_methods = 'EEGnet_CNN'
-    methods = 'locl_ssp_car_ica_RAW_EEGnet_CNN'
-    methods = 'locl_ssp_car_ica_CSP_LDA_ML'
-    raw = extractBCI3(runs , person_id)
-    # raw = extractPhysionet(runs, person_id)
+    methods = '16locl_IMG_EEGnet_CNN'
+    methods = 'locl_ssp_car_ica_RAW_LDA_ML'
+
     
     bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg, runs, person_id)
 
     bsa.artifact_removal(methods, save_epochs = False)
     bsa.feature_extraction(methods, save_feat = True)#,
         # epoch_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/preproc/BCI3_ssp_car_ica_3_P3_epo.fif')
-    bsa.classifier(methods, save_model = True)#,
+    # bsa.classifier(methods, save_model = False)#,
     #     feat_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/feature_extraction/Train_locl_ssp_car_ica_TF_EEGnet_CNN_[3]_1.npz')
