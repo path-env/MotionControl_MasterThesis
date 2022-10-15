@@ -12,11 +12,11 @@ import numpy as np
 
 from models.train_net import train_and_validate
 from data.params import BCI3Params, EEGNetParams, TFNetParams
-from main.extraction.data_extractor import data_container
+from main.extraction.data_extractor import DataContainer
 
 import torch, torchvision
 from torchvision import transforms, models
-from main.extraction.data_extractor import data_container
+from main.extraction.data_extractor import DataContainer
 
 
 def TFnet(n_classes, n_chan, n_T):
@@ -79,7 +79,7 @@ if __name__ =='__main__':
     n_classes = np.unique(labels).shape[0]
 
     bs, lr = 1, 0.001
-    data = data_container(train_data, labels)
+    data = DataContainer(train_data, labels)
 
     # _,n_chan,n_T = train_loader.dataset.__getitem__(0)[0].shape
     model =  TFnet(n_classes,None,None).float()

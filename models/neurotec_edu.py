@@ -6,7 +6,7 @@ import numpy as np
 torch.manual_seed(100)
 
 class Neurotech_net(nn.Module):
-    def __init__(self):
+    def __init__(self, n_classes, n_chan, n_T, sf, F1 = 10, F2 = 22, D =4, dt = 0.379):
         super(Neurotech_net,self).__init__()
         self.L1 = nn.Linear(226,500,bias=True)
         self.L2 = nn.Linear(500,1000,bias=True)
