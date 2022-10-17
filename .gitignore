@@ -17,3 +17,4 @@ main/extraction/__pycache__/physionet_MI.cpython-38.pyc
 models/QEEGNet_2020.py
 ./*.pyc
 carla_bci_control/src/carla_bci_control/src/__pycache__/bci2ros.cpython-38.pyc
+*/__pycache__/*.pyc
