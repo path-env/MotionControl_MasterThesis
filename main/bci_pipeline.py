@@ -7,6 +7,7 @@
 # %matplotlib tk 
 
 # %%
+from time import time
 import mne
 import numpy as np
 import pandas as pd
@@ -19,7 +20,7 @@ from sklearn.preprocessing import MinMaxScaler
 # from main.extraction.physionet_MI import  extractPhysionet, extractBCI3
 from data import brain_atlas  as bm
 from data.params import BCI3Params, EEGNetParams, OCIParams, PhysionetParams, globalTrial
-from extraction.oci_MI import extractOCI
+from main.extraction.oci_MI import extractOCI
 # Data Extraction
 from main.extraction.bci3_IVa import extractBCI3
 from main.extraction.physionet_MI import extractPhysionet
@@ -55,18 +56,14 @@ from main.extraction.data_extractor import DataContainer
 from models.neurotec_edu import Neurotech_net
 from models.MI_CNN_WT_2019 import TFnet
 from models.EEGNet_2018 import EEGnet
-from models.train_net import train_and_validate
+from utils.train_net import train_and_validate
 
 # %%
-
-
 class BrainSignalAnalysis():
-    def __init__(self, raw, data_cfg, analy_cfg, net_cfg,runs, person_id) -> None:
+    def __init__(self, raw, data_cfg = OCIParams(), analy_cfg = globalTrial(), net_cfg = EEGNetParams()) -> None:
         self.dCfg = data_cfg
         self.aCfg = analy_cfg
         self.nCfg = net_cfg
-        self.runs = runs
-        self.person_id = person_id
 
         # Parameters
         elec_lines_f, L_cutoff, H_cutoff = self.dCfg.elec_lines_f, self.aCfg.mu_rhythm[0], self.aCfg.beta_rhythm[-1] #HZ
@@ -132,11 +129,23 @@ class BrainSignalAnalysis():
             # cv2.waitKey(0)
             return None
 
-        # %%
-        # Remove the artifacts
+    def normalize(self, x):
+        # Normalizing
+        for ep in range(x.shape[0]):
+            for ch in range(x.shape[1]):
+                x[ep,ch,:] = (x[ep,ch,:] - x[ep,ch,:].min()) / (x[ep,ch,:].max() - x[ep,ch,:].min())
+            # try:
+            #     train_x[j,:]-= np.mean(train_x[j,:])
+            #     train_x[j,:] = (train_x[j,:]/np.std(train_x[j,:]) )/3
+            # except Exception as e:
+            #     train_x[j,:] =0
+        return x
+    
+    # %%
+    # Remove the artifacts
     def artifact_removal(self, method, save_epochs = False):
         rawfltrd = self.rawfltrd.copy()
-        rawfltrd = rawfltrd.resample(80) # for OpenBCI headset
+        rawfltrd = rawfltrd.resample(self.dCfg.sfreq) # for OpenBCI headset
         if method.find('locl')!= -1:
             pick_ch = bm.oci_Channels  # Considering only the channels that map to topo map functionality
             rawfltrd.pick_channels(pick_ch); # inplace
@@ -222,22 +231,12 @@ class BrainSignalAnalysis():
         event_ids = self.dCfg.event_dict# Replacing the existing event ids
         self.classes = list(event_ids.keys())
         # epochs1 = mne.Epochs(rawfltrd, events= event_marker, event_id= event_ids, baseline = (0,0))
-        epochs = mne.Epochs(rawfltrd, events= event_marker, tmin= self.dCfg.tmin, tmax=self.dCfg.tmax, event_id= event_ids, 
-                        verbose= True, proj= True, reject = None, baseline=(None,0), preload = True) # Baseline is default (None,0)
+        epochs = mne.Epochs(rawfltrd, events= event_marker, tmin= self.dCfg.tmin, tmax=self.dCfg.tmax, event_id= event_ids, on_missing = 'ignore',  
+                        verbose= True, proj= True, reject = None, baseline=(None,-5)) # Baseline is default (None,0)
         # epochs.equalize_event_counts() # Shape = epochs x chan x timepnts
         self.rawfltrd = rawfltrd
-        # # Normalizing
-        # x = epochs.get_data()
-        # for ep in range(x.shape[0]):
-        #     for ch in range(x.shape[1]):
-        #         x[ep,ch,:] = (x[ep,ch,:] - x[ep,ch,:].min()) / (x[ep,ch,:].max() - x[ep,ch,:].min())
-        #     # try:
-        #     #     train_x[j,:]-= np.mean(train_x[j,:])
-        #     #     train_x[j,:] = (train_x[j,:]/np.std(train_x[j,:]) )/3
-        #     # except Exception as e:
-        #     #     train_x[j,:] =0
         # epochs.load_data()
-        # epochs._data = x
+        # epochs._data = self.normalize(epochs.get_data())
         self.epochs = epochs
         # Evoked data
         # T0 = epochs['T0'].average() # Shape = chan x timepnts
@@ -258,17 +257,16 @@ class BrainSignalAnalysis():
 
         # %%
         ## Data whitening
-        noise_cov = mne.compute_covariance(self.epochs, tmax=0., method='shrunk', rank=None, verbose='error')
-        if self.plot_enable==1:                                   
+        if self.plot_enable==1:   
+            noise_cov = mne.compute_covariance(self.epochs, tmax=0., method='shrunk', rank=None, verbose='error')                                
             self.epochs[self.classes[0]].plot_white(noise_cov=noise_cov); # step of scaling the whitened plots to show how well the assumption of Gaussian noise is satisfied by the data
         if save_epochs == True:
-            self.epochs.save(f'main/preproc/{self.dCfg.name}_{method}_{self.runs}_P{self.person_id}_epo.fif', overwrite= True)
+            self.epochs.save(f'main/preproc/{self.dCfg.name}_{method}_epo.fif', overwrite= True)
             print('Epochs saved')
 
-        # %%
-        # Extract the features
+    # Extract the features
     def feature_extraction(self,method, epoch_file = None, save_feat = False):
-        frequencies =  np.arange(5,30,1) #np.logspace(*np.log10([5, 30]), num=25)
+        frequencies =  np.arange(5,40,1) #np.logspace(*np.log10([5, 30]), num=25)
         chpicks = [1] #baseline = (-0.5, 0.)
         if epoch_file !=None:
             # self.epochs.delete()
@@ -304,6 +302,7 @@ class BrainSignalAnalysis():
                     powerdB[ep,f,:] = 10*np.log10(activity/baseline)
                     powerEp[ep,f,:] = activity
 
+            powerdB = self.normalize(powerdB.copy())
             self.features = powerdB
             # features = features.reshape(features.shape[0],-1)           
             # print(self.features.shape)
@@ -407,21 +406,22 @@ class BrainSignalAnalysis():
             self.labels = self.labels.repeat(sh[1])
 
         # Test train split
-        self.train_x, self.test_x,self.train_y,self.test_y = train_test_split(self.features, self.labels, 
-                                   test_size= self.dCfg.test_split, stratify= self.labels, random_state= 42)
+        if self.features.shape[0] > 3:
+            self.train_x, self.test_x,self.train_y,self.test_y = train_test_split(self.features, self.labels, 
+                                    test_size= self.dCfg.test_split, stratify= self.labels, random_state= 42)
 
-        if len(self.train_x.shape) <4:
-            self.train_x = np.expand_dims(self.train_x, axis=1)
-            self.test_x = np.expand_dims(self.test_x, axis=1)
+            if len(self.train_x.shape) <4:
+                self.train_x = np.expand_dims(self.train_x, axis=1)
+                self.test_x = np.expand_dims(self.test_x, axis=1)
         # self.train_x = (self.train_x - self.train_x.min()) / (self.train_x.max() - self.train_x.min())
         # self.test_x = (self.test_x - self.test_x.min()) / (self.test_x.max() - self.test_x.min())
 
-        method = method.split('_')[:-2]
-        method = '_'.join(method)
-        if save_feat == True:
-            np.savez(f'data/train/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}',self.train_x, self.train_y)
-            np.savez(f'data/test/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}',self.test_x, self.test_y)            
-            print(f'Features saved to: data/test|train/{self.dCfg.name}_{method}_{self.runs}_{self.person_id}')
+            method = method.split('_')[:-2]
+            method = '_'.join(method)
+            if save_feat == True:
+                np.savez(f'data/train/{self.dCfg.name}_{method}',self.train_x, self.train_y)
+                np.savez(f'data/test/{self.dCfg.name}_{method}',self.test_x, self.test_y)            
+                print(f'Features saved to: data/test|train/{self.dCfg.name}_{method}')
             
         # %%
         # classify
@@ -486,25 +486,29 @@ class BrainSignalAnalysis():
                            
 
 if __name__ =='__main__':
+    '''
     runs = [3, 4, 7, 8, 11, 12]
     person_id = 1
+    raw = extractBCI3(runs , person_id)
+    raw = extractPhysionet(runs, person_id)
+    '''
     data_cfg = OCIParams()
-    # raw = extractBCI3(runs , person_id)
-    # raw = extractPhysionet(runs, person_id)
-    raw = extractOCI(runs, person_id)
+    raw = extractOCI([], 1)
     analy_cfg = globalTrial()
     net_cfg = EEGNetParams()
-    # artifact_removal_methods =  'ssp_car_ica'
-    # feat_extract_methods = artifact_removal_methods+'_TF'
-    # classi_methods = 'EEGnet_CNN'
-    methods = '16locl_IMG_EEGnet_CNN'
-    methods = 'locl_ssp_car_ica_RAW_LDA_ML'
-
+    artifact_removal_methods =  'locl_ssp_car_ica'
+    feat_extract_methods = artifact_removal_methods+'_TF'
+    classi_methods = feat_extract_methods+'_CNN'
     
-    bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg, runs, person_id)
+    methods = 'locl_IMG_EEGnet_CNN'
+    methods = f'locl_ssp_car_ica_TF_LDA_ML_{0}_{0}'
+
+    start = time()
+    bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg)
 
     bsa.artifact_removal(methods, save_epochs = False)
     bsa.feature_extraction(methods, save_feat = True)#,
         # epoch_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/preproc/BCI3_ssp_car_ica_3_P3_epo.fif')
     # bsa.classifier(methods, save_model = False)#,
     #     feat_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/feature_extraction/Train_locl_ssp_car_ica_TF_EEGnet_CNN_[3]_1.npz')
+    print(f"Overall time: {time() - start}")
