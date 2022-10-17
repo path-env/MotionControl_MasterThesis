@@ -9,7 +9,7 @@ from models.DLSTM_MI_2019 import ATTNnet
 import torch.optim.lr_scheduler as lr_scheduler
 from data.params import BCI3Params, EEGNetParams, OCIParams, PhysionetParams
 from main.extraction.data_extractor import DataContainer 
-from models.train_net import train_and_validate
+from utils.train_net import train_and_validate
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -54,7 +54,7 @@ def objective(trial):
     # model = ATTNnet(n_classes, cCh*n_T, n_layers = param['D'], dt = param['dt'])
 
     model =  EEGnet(n_classes = n_classes, n_chan = n_chan, n_T = n_T,
-             sf = 80, F1 = param['F1'], F2 = param['F2'], D =param['D'], dt = param['dt'])
+             sf = dCfg.sfreq, F1 = param['F1'], F2 = param['F2'], D =param['D'], dt = param['dt'])
     optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= lr)
     # optimizer = optim.Adam(model.parameters(), lr= lr)
     LRscheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)

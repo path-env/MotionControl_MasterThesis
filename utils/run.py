@@ -3,16 +3,14 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 from torch.utils.data import DataLoader
 import numpy as np
-from sklearn.model_selection import StratifiedKFold
-from sklearn.model_selection import RepeatedKFold
-
+from sklearn.model_selection import StratifiedKFold, ShuffleSplit, RepeatedKFold
 from torch.utils.tensorboard import SummaryWriter
 from models.DL_LSTM_MI_2021 import CasCnnRnnnet
 
-from models.train_net import train_and_validate, test_net
+from utils.train_net import train_and_validate, test_net
 from data.params import ATTNnetParams, BCI3Params, EEGNetParams, OCIParams, PhysionetParams, CasCnnRnnnetParams
 from main.extraction.data_extractor import DataDispenser, DataContainer
-from models.profile_net import profiler
+from utils.profile_net import profiler
 
 from models.EEGNet_2018 import EEGnet
 from models.DeepRNN import SEQnet
@@ -33,6 +31,8 @@ if __name__ =='__main__':
     filename = 'Physionet_locl_ssp_car_ica_RAW_[3, 4, 7, 8, 11, 12]_1.npz'
 
     filename = 'OCIParams_locl_ssp_car_ica_RAW_[3, 4, 7, 8, 11, 12]_1.npz'
+    filename = 'OCIParams_locl_ssp_car_ica_TF_LDA_ML.npz'
+
     train = np.load(f'/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/data/train/{filename}', allow_pickle=True)
     train_x = np.float64(train['arr_0'])
     train_y = train['arr_1']
@@ -50,19 +50,19 @@ if __name__ =='__main__':
     # train_x = train_x[:,:,:,200:] 
     n_classes = len(set(train_y))
     bs, lr = 1, 0.001
-    rkf = RepeatedKFold(n_splits=10,n_repeats=1, random_state=42)
+    crsval = ShuffleSplit(n_splits=1, test_size = nCfg.val_split, random_state=42)
     datacont = DataContainer(train_x, train_y)
     data = DataDispenser(datacont, nCfg)
     traincrossvalacc, valcrossvalacc = [],[]
     traincrossvalf1, valcrossvalf1 = [],[]
     testcrossval = []
-    for fold, (data.train_idx, data.val_idx) in enumerate(rkf.split(train_x)):
-        print(f'############### Fold - {fold} ######################')
+    for fold, (data.train_idx, data.val_idx) in enumerate(crsval.split(train_x)):
+        print(f'   ############### Fold - {fold} ######################')
         n_s,cCh,n_chan,n_T = datacont.x.shape
         # model = CasCnnRnnnet(n_classes, n_seg = cCh, n_row_img = n_chan, n_row_col= n_T, n_layers = 3, dt = 0.55)
         # model = ATTNnet(n_classes, cCh*n_T, cCh, n_layers = 3, dt = 0.55)
         model =  EEGnet(n_classes = n_classes, n_chan = n_chan, n_T = n_T,
-                sf = 80, F1 = 24, F2 = 16, D =4, dt = 0.5)
+                sf = dCfg.sfreq, F1 = 24, F2 = 16, D =4, dt = 0.5)
 
         tb_comment = f'batch_size={nCfg.train_bs}, lr={nCfg.lr}'
         tb_info = (f'logs/{model._get_name()}/{dCfg.name}/{filename}', tb_comment)
@@ -77,11 +77,12 @@ if __name__ =='__main__':
         optimizer = optim.Adam(model.parameters(), lr=0.001)
         LRscheduler = lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
 
-        acc_train, acc_val, f1_train, f1_val = train_and_validate(data,model,loss,optimizer, LRscheduler, tb , dCfg, nCfg,epochs = 100)
+        acc_train, acc_val, f1_train, f1_val = train_and_validate(data,model,loss,optimizer, LRscheduler, tb , 
+                                                                    dCfg, nCfg,epochs = 100)
         traincrossvalacc.append(acc_train), valcrossvalacc.append(acc_val)
         traincrossvalf1.append(f1_train), valcrossvalf1.append(f1_val)
         # profiler(model, optimizer, loss, data, LRscheduler, tb_info[0])
-        if f1_train > 0.7:
+        if f1_val > 0.7:
             print('Saving the model.....')
             # torch.save(model,f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified.pt'}")
             model_scripted = torch.jit.script(model) # Export to TorchScript
