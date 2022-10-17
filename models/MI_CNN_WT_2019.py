@@ -10,7 +10,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 
 import numpy as np
 
-from models.train_net import train_and_validate
+from utils.train_net import train_and_validate
 from data.params import BCI3Params, EEGNetParams, TFNetParams
 from main.extraction.data_extractor import DataContainer
 

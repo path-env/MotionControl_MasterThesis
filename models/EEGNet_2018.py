@@ -8,10 +8,10 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 import numpy as np
 
-from models.train_net import train_and_validate
+from utils.train_net import train_and_validate
 from data.params import BCI3Params, EEGNetParams, PhysionetParams
 from main.extraction.data_extractor import DataContainer
-from models.profile_net import profiler
+from utils.profile_net import profiler
 
 class EEGnet(nn.Module):
     def __init__(self, n_classes, n_chan, n_T, sf, F1 = 10, F2 = 22, D =4, dt = 0.379) -> None:

@@ -2,25 +2,19 @@ import torch
 from torch import nn
 torch.manual_seed(1)
 
-class DRNN(nn.Module):
-    def __init__(self):
+class SEQnet(nn.Module):
+    def __init__(self, n_class, n_chan, n_T, sf, dt = 0.379) -> None:
         super().__init__()
-        self.L1 = nn.Linear(64,64,bias=True)
-        self.L2 = nn.Linear(64,64,bias=True)
-        self.L3 = nn.Linear(64,64,bias=True)
-        self.L4 = nn.Linear(64,64,bias=True)
-        self.LSTM5 = nn.LSTM(64,64,bias=True, batch_first = True)
-        self.LSTM6 = nn.LSTM(64,64, bias=True, batch_first = True)
-        self.L7 = nn.Linear(64, 3)
-        # self.seq = nn.Sequential(nn.Linear(1,1),nn.Sigmoid())
+        # inputs in shape (batch x Colorchn x n_ch x n_TS)
+        hid_size = 35
+        self.rnn = nn.LSTM(n_chan, hid_size, num_layers = 2, batch_first = True, dropout = dt)
+        self.fc1 = nn.Linear(hid_size,100)
+        self.fc2 = nn.Linear(100, n_class)
     
     def forward(self, x):
-        x = torch.sigmoid(self.L1(x))
-        x = self.L2(x)
-        x = self.L3(x)
-        x = self.L4(x)
-        # x = self.LSTM5(x)
-        # x = self.LSTM6(x)
-        x = self.L7(x)
-        y = torch.argmax (x)
-        return y
+        x = x[:,-1,:,:]
+        x = torch.transpose(x,1,2)
+        x,_ = self.rnn(x)
+        x = nn.functional.relu(self.fc1(x))
+        x = nn.functional.relu(self.fc2(x))
+        return x
