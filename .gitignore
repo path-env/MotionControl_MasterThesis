@@ -18,3 +18,17 @@ models/QEEGNet_2020.py
 ./*.pyc
 carla_bci_control/src/carla_bci_control/src/__pycache__/bci2ros.cpython-38.pyc
 */__pycache__/*.pyc
+*/*/__pycache__/*.pyc
+**/*.npz
+docs/MotionControl.aux
+docs/MotionControl.bbl
+docs/MotionControl.bcf
+docs/MotionControl.blg
+docs/MotionControl.fdb_latexmk
+docs/MotionControl.fls
+docs/MotionControl.log
+docs/MotionControl.out
+docs/MotionControl.run.xml
+docs/MotionControl.synctex.gz
+docs/MotionControl.thm
+docs/MotionControl.toc

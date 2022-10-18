@@ -526,8 +526,7 @@ citestyle=authoryear
 
 % Import harvard if [harvard] is specified, otherwise
 % standard biblatex!
-\ifClassOptionElse[harvard]{\@importHarvard}{\@importBibLaTeX}
-
+% \ifClassOptionElse[harvard]{\@importHarvard}{\@importBibLaTeX}
 
 % Command for printing out references list
 \newcommand{\printReferences}[1][References]{
