@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 from carla_msgs.msg import CarlaEgoVehicleControl, CarlaStatus
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Float32
 
 import ros_compatibility as roscomp
 from ros_compatibility.node import CompatibleNode
@@ -9,7 +9,9 @@ from ros_compatibility.qos import QoSProfile, DurabilityPolicy
 import numpy as np
 import torch
 
-from utils.oci_interface import OpenBciInterface
+from oci_interface import OpenBciInterface
+from data.params import OCIParams
+from threading import Thread
 
 """
 # commands to start carla - BCI - ROS
@@ -62,22 +64,20 @@ class BCIControl(object):
         self.role_name = role_name
         self.hud = hud
         self.node = node
-        jit_model = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/EEGnet_md_script.pt'
-        self.bci_interface = OpenBciInterface(jit_model)
         self._autopilot_enabled = True
         self._control = CarlaEgoVehicleControl()
         self._steer_cache = 0.0
-
+        self.dCfg = OCIParams()
         fast_qos = QoSProfile(depth=10)
         fast_latched_qos = QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL)
 
         self.vehicle_control_manual_override_publisher = self.node.new_publisher(
             Bool,f"/carla/{self.role_name}/vehicle_control_manual_override", qos_profile=fast_latched_qos)
 
-        self.vehicle_control_manual_override = False
+        self.vehicle_control_manual_override = True
 
         self.auto_pilot_enable_publisher = self.node.new_publisher(
-            Bool,f"/carla/{self.role_name}/enable_autopilot", qos_profile=fast_qos)
+            Bool,f"/carla/{self.role_name}/enable_autopilot", qos_profile=fast_latched_qos)
 
         self.vehicle_control_publisher = self.node.new_publisher(
             CarlaEgoVehicleControl,f"/carla/{self.role_name}/vehicle_control_cmd_manual", qos_profile=fast_qos)
@@ -85,10 +85,19 @@ class BCIControl(object):
         self.carla_status_subscriber = self.node.new_subscription(
             CarlaStatus,  "/carla/status", self._on_new_carla_frame, qos_profile=10)
 
+        self.bci_steer_cmd_subscriber = self.node.new_subscription(
+            Float32, f"/carla/{self.role_name}/bci_steer_cmd",self._steer_cmd , qos_profile=fast_latched_qos)
+
         self.set_autopilot(self._autopilot_enabled)
 
         self.set_vehicle_control_manual_override(
             self.vehicle_control_manual_override)  # disable manual override
+
+        # jit_model = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/EEGnet.pt'
+        # self.bci_interface = OpenBciInterface(jit_model)
+        # self.bci_interface._mne_stream()
+        # self.bci_thread = Thread(target = self.bci_interface.getCmd)
+        # self.bci_thread.start()
 
     def set_vehicle_control_manual_override(self, enable):
         """
@@ -154,31 +163,40 @@ class BCIControl(object):
                 self.vehicle_control_publisher.publish(self._control)
             except Exception as error:
                 self.node.logwarn("Could not send vehicle control: {}".format(error))
+    
+    def _steer_cmd(self, steerval):
+        try:
+            self._steer_cache = steerval.data
+        except Exception as error:
+            self.node.logwarn("Could not send steer message: {}".format(error))
 
     def _parse_vehicle_keys(self, keys, milliseconds):
         """
         parse key events
         """
-        steer_prob,_ = self.bci_interface.getCmd()
+        # steer_prob,_ = self.bci_interface.getCmd()
+        # steer_prob = self.bci_thread.prob
+        # steer_prob = data
         self._control.throttle = 1.0 if keys[K_UP] or keys[K_w] else 0.2
-        steer_increment = 5e-4 * milliseconds
+        # steer_increment = 5e-4 * milliseconds
 
-        steer_op = torch.argmax(steer_prob)
-        if steer_op == 1:
-            self.hud.notification('BCI - Steer Neutral')            
-            self._steer_cache =0
-        elif steer_op == 0:
-            self.hud.notification('BCI - Steer Left')    
-            self._steer_cache -= steer_increment
-        elif steer_op == 2:
-            self.hud.notification('BCI - Steer Right')    
-            self._steer_cache += steer_increment
-        else:
-            self.hud.notification('BCI - Unknown command')   
-            self._steer_cache = 0.0
+        # steer_op = torch.argmax(steer_prob)
+        # if steer_op == self.dCfg.event_dict_rec['none']:
+        #     self.hud.notification('BCI - Steer Neutral')            
+        #     self._steer_cache =0
+        # elif steer_op == self.dCfg.event_dict_rec['left']:
+        #     self.hud.notification('BCI - Steer Left')    
+        #     self._steer_cache -= steer_increment
+        # elif steer_op == self.dCfg.event_dict_rec['right']:
+        #     self.hud.notification('BCI - Steer Right')    
+        #     self._steer_cache += steer_increment
+        # else:
+        #     self.hud.notification('BCI - Unknown command')   
+        #     self._steer_cache = 0.0
 
-        self._steer_cache = min(0.7, max(-0.7, self._steer_cache))
-        self._control.steer = round(self._steer_cache, 1)
+        # self._steer_cache = self.steer_val #min(0.7, max(-0.7, self._steer_cache))
+        self._control.steer = round(self._steer_cache, 3)
+        print(f'Steer Value: {self._control.steer}')
         self._control.brake = 1.0 if keys[K_DOWN] or keys[K_s] else 0.0
         self._control.hand_brake = bool(keys[K_SPACE])
 

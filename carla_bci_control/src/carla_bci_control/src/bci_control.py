@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Welcome to CARLA ROS manual control.
+Welcome to CARLA ROS  bci control.
 
 Use ARROWS or WASD keys for control.
 
@@ -10,9 +10,9 @@ Use ARROWS or WASD keys for control.
     Q            : toggle reverse
     Space        : hand-brake
     P            : toggle autopilot
-    M            : toggle manual transmission
+    M            : toggle  bci transmission
     ,/.          : gear up/down
-    B            : toggle manual control
+    B            : toggle  bci control
 
     F1           : toggle HUD
     H/?          : toggle help
@@ -165,7 +165,7 @@ class HUD(object):
         self.yaw = 0
         self.latitude = 0
         self.longitude = 0
-        self.manual_control = False
+        self.bci_control = False
 
         self.gnss_subscriber = node.new_subscription(
             NavSatFix,
@@ -180,10 +180,10 @@ class HUD(object):
             qos_profile=10
         )
 
-        self.manual_control_subscriber = node.new_subscription(
+        self.bci_control_subscriber = node.new_subscription(
             Bool,
             "/carla/{}/vehicle_control_manual_override".format(self.role_name),
-            self.manual_control_override_updated,
+            self.bci_control_override_updated,
             qos_profile=10)
 
         self.carla_status = CarlaStatus()
@@ -206,11 +206,11 @@ class HUD(object):
         self.carla_status = data
         self.update_info_text()
 
-    def manual_control_override_updated(self, data):
+    def bci_control_override_updated(self, data):
         """
         Callback on vehicle status updates
         """
-        self.manual_control = data.data
+        self.bci_control = data.data
         self.update_info_text()
 
     def vehicle_status_updated(self, vehicle_status):
@@ -290,7 +290,7 @@ class HUD(object):
                 0: 'N'
             }.get(self.vehicle_status.control.gear, self.vehicle_status.control.gear), ''
         ]
-        self._info_text += [('Manual ctrl:', self.manual_control)]
+        self._info_text += [('BCI ctrl:', self.bci_control)]
         if self.carla_status.synchronous_mode:
             self._info_text += [('Sync mode running:', self.carla_status.synchronous_mode_running)]
         self._info_text += ['', '', 'Press <H> for help']
@@ -446,31 +446,31 @@ def main(args=None):
     """
     main function
     """
-    roscomp.init("manual_control", args=args)
+    roscomp.init("BCI_control", args=args)
 
     # resolution should be similar to spawned camera with role-name 'view'
     resolution = {"width": 800, "height": 600}
 
     pygame.init()
     pygame.font.init()
-    pygame.display.set_caption("CARLA ROS manual control")
+    pygame.display.set_caption("CARLA ROS BCI control")
 
     try:
         display = pygame.display.set_mode((resolution['width'], resolution['height']),
                                           pygame.HWSURFACE | pygame.DOUBLEBUF)
 
-        manual_control_node = Wrapper(resolution)
+        bci_control_node = Wrapper(resolution)
         clock = pygame.time.Clock()
 
         executor = roscomp.executors.MultiThreadedExecutor()
-        executor.add_node(manual_control_node)
+        executor.add_node(bci_control_node)
 
-        spin_thread = Thread(target=manual_control_node.spin)
+        spin_thread = Thread(target=bci_control_node.spin)
         spin_thread.start()
 
         while roscomp.ok():
             clock.tick_busy_loop(60)
-            if manual_control_node.render(clock, display):
+            if bci_control_node.render(clock, display):
                 return
             pygame.display.flip()
     except KeyboardInterrupt:
