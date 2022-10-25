@@ -6,4 +6,8 @@
     <param name="role_name" value="$(arg role_name)"/>
   </node>
 
+  <node pkg="carla_bci_control" type="oci_interface.py" name="bci_intf_$(arg role_name)" output="screen"> 
+      <param name="role_name" value="$(arg role_name)"/>
+  </node>
+
 </launch>
