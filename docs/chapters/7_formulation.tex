@@ -1,18 +1,150 @@
 \section*{Introduction}
+    The goal of this work is to control the simulated car in CARLA using motor intent from the users brain activity. Motor Imagery is the information that needs 
+to be extracted from the EEG data. There are several other information that can be  obtained and are broadly classified into Spontaneous EEG and Evoked Potential which are 
+briefly explained.
 
-\section{Data Extraction}
+\section{Brain Signal Acquisition/ Extraction}
+Neurons are the basic computational unit of the nervous system. The electric signal recorder as brain wave is the result of electrochemical interations
+that occur at the outer membrane of neurons. In case of a event, the raises and falls of potential at the membrane of the neuron is called as action potential.
+The electrical activity at the neurons enable us to record and decode the brain activities. There are many ways to record the electrical activity and 
+are broadly classified into invasive and non-invasive recording. Some technologies can also be used to stimulate neurons or brain regions, that allows BCIs
+to send feedback to brain based on interactions with the world. This work is only on Electroencephalography, a  noninvasive approach, hence the topic on
+invasive approaches and other noninvasive approaches are just briefly touched.
+
+    \subsection{Invasive Approaches}
+Approaches requiring some surgery where an electrode is placed in direct contact with required region in the brain are invasive methods of recording 
+brain signals. These approaches are typically performed on animals such as monkeys, rats. In case of humans these approaches are carried on under strict
+clinical settings. As the recording sensor is in direct contact with the brain tissues, these provide higher quality signals with high SNR, higher spatial 
+resolution and less spatial smearing compared to the noninvasive approaches.
+
+    \subsubsection{Electrocorticography (ECoG)}
+    ECoG is an extracortical invasive electrophysiological monitoring method \cite{2021}. Typically performed in a clinical setting, a strip of electrodes
+are placed on the surface of intrest on the brain. It has many advantages compared to other invasive approaches.
+
+    \subsection{Noninvasive Approaches}
+Approaches that gather brain signals over the surface of the scalp, without any surgery or electrodes being inserted into the skull are termed noninvasive
+approaches. The signals could be collected by measuring the electrical or the magnetic activity on the surface of the scalp. Some of the common noninvasive 
+approaches are Electroencephalography (EEG), functional magnetic resonance imaging (fMRI), functional near-infrared spectroscopy (fNIRS), magnetoencephalography (MEG),
+and electrooculography (EOG).
+    
+%     \subsubsection{Functional Near-infrared Spectroscopy (fNIRS)}
+% fNIRS uses near-infrared light to measure the degree of oxygenated and deoxygenated haemoglobin. The relative levels 
+
+    \subsubsection{Electroencephalography (EEG)}
+EEG is the most commonly used noninvasive approach used to measure brain electrical activity on the surface of the scalp. The electrodes are usually placed
+according to internationally recognized 10-20 system \cite{safe}. The spatial resolution of the signals depend on the number of electrodes used. The temporal
+resolution depends on how many samples the system could measure in a second. However the temporal resolution of the EEG signals is much better than the spatial
+resolution. In Comparison to invasive approaches, the EEG systems have poor spatial and temporal resolution, and very poor SNR. Since the measurement is taken
+over the surface of the scalp, the obstruction of the skull and other tisses between cortex and the scalp act as a huge conductive surface leading to spatial
+smearing. In comparison to other noninvasive approaches EEGs have higher temporal resolution, tolerant to noise and artifacts, low cost and no exposure to 
+high intensity magnetic fields.
+
+    Spatial smearing is the effect by which all the electrodes tend to measure the same signal because of the conductive effect of the tissues between the cortex
+and scalp. It also very succeptible to other noises such as power-line, changind electrode impedance, eye movements, eye blinks, facial muscle movements and head
+movement. The brain signals measured from the EEG systems can be seperated into frequency bands, where each frequency band represents to a specific brain state
+and level of awareness. The recorded brain signals contains information on various physiological, psychological, mental, sensory and cognitive activities. Hence
+it is required to analyse and extract the relevant information from the signal.
+
+\section{EEG Paradigms}
+
+\subsection{Spontaneous EEG}
+Spontaneous EEG also referred as Oscillatory Activity includes a wide range of task typically without any external stimulation such as mental task, motor imagery,sleeping, 
+under fatigue stage. BCI systems that work with spontaneous EEGs are also called Active BCI as they reuire conciously controlled thought independent from external events.
+BCI systems that work with spontaneous EEG are hard to train given their low SNR and variation in subjects.
+
+    \subsubsection{Motor Imagery (MI)}
+Imagining a motor movement without performing an actual movement is termed Motor Imagery. It is one of the widely researched EEG paradigm that is used in several applications
+where the user is limited in their motor movement capabilities. It also helps in mental rehersals as the person experience themselves performing the action. MI is due to
+two basic phenomena that occur in the brain onset of imagination - Event Related Desynchronization (ERD) and Event Related Synchronization (ERS). ERD/ERS refers to 
+phenomena that the magnitude and the frequency distribution of the EEG signal power changes during a specific brain state. It is mostly observed in sensory, cognitive
+and motor tasks. During motor imagery contralateral ERD is observed in the mu band and after motor imagery ERS is observed in beta band.
+
+Event Related Desynchronization (ERD) is due to activity of small set of neurons. A visual stimulation results in a short lasting attenuation or blocking of rhythm in the alpha 
+band leading to power decrease of ongoing EEG signals. This decrease in the oscillatory is related to internally or externally paced events.
+
+Event Related Synchronization (ERS) is due to activity of large set of neurons. The increase in oscillatory activity is again related to internally or externally paced events.
+It is characterized by short lasting amplitude enchancement.
+
+\subsection{Evoked Potential}
+Processing of physcal stimulus rather than higher processes that might involve memory and attention. BCI systems that work with EPs could be also valled Reactive BCI as they
+rely on response to the stimulus provided. Few of the commonly researched EPs are described below
+
+    \subsubsection{Event Related Potential(ERP)}
+It is the most widely researched EPs and it is further classified based on the stimulus used to trigger the brain waves: visual evoked potential when stimulated visually,
+audiotory evoked potential when stimulated with sound and somatosensory evoked potential when evoked with smell. The stimulus could be internal or external based on the BCI 
+system. P300 is an important component in ERP and it is been widely used in many BCI systems exiisting in the marker. It refer to the postive peak that appears 300ms after the 
+onset of stimulus.
+
+    \subsubsection{Error Related Potential(ErRP)}
+It is a result oof an errorous event. It is generated by the error processing mechanism in the human brain. It provides a feature rich feedback to the BCI system and helps to
+tune the sytem in the desirable way.
 
 \subsection{OpenBCI headgear}
+    OpenBCI is an open-source BCI platform that develops hardware and software for BCI scientific research. It provides electrodes, interface boards, graphical user interface 
+and pythonAPI. In this work, the openBCI system consists a 3D printed headgear with 16 EEG electrodes connected to Cython + Daisy board that interacts to computer wireless 
+through an external dongle via 
+serial communication. Cython is a 8-channel neural interface with a 32-bit processor which has a sampling frequency of 250Hz. It is topped with Daisy, an extension board which 
+can add upto 8 more channels to the system. This leads to drop in the sampling frequency tp 125HZ. With a WiFi module it is possible to achieve 1kHz.
+The potential difference between the electrodes and the reference points such as 
+linked mastoids, inion or nasion. The measurements can be visualized on the host machine using OpenBCI GUI. The electrodes are placed in the internationally recognized 10-20 system.
+
+    Before the experiment could be started several parameters are checked. In order to ensure the contact of electrodes on the users scalp, the impedance at the electrodes are
+monitored and adjusted untill they fall into acceptable threshold i.e. less than 750k\Omega. Next the frequency filters are configured to avoid DC offset and electric powerline 
+noises. However this filter is applied only to the visualizer and not to the recorded data. The electrodes are very succeptible to noises that appear around 25Hz even after
+filtering the DC offset and powerline noises. Hence while performing the experiment the user is away from any electronic device.
+
+    Now the measured data can be shared to the developed algorithm for analysis. This information can be either streamed through BrainFlow or Lab Streaming Layer(lsl). This work
+uses lsl to establish communication between OpenBCI GUI and carla_bci_control ROS node. With the support of MNE, a mock lsl stream can be generated which helps in debugging the
+algorithm even in the absence of the OpenBCI headgear.
 
 \subsection{Open source Datasets}
+    BCIs are widely researched topic for several decades, however the huge variation in the BCI experiments to obtain relevant information from the brain signal is a bottleneck
+in the publicly available dataset. This work required a multiclass motor-imagery dataset recorded with 16+ channel BCI system and sampling rate of greater than 125Hz. Some of the
+datasets that were used in setting up the signal processing pipeline and used for comparative analysis are discussed further. The dataset thus used were resampled, channel picked
+inorder to develop a signal processing pipeline compatible to the hardware inhand.
+
+\subsubsection{PhysioNet}
+    It consists of over 1500 one- and two-minute EEG recordings from 109 participants performing motor-imagery task using 64-channel BCI2000 system at a sample rate of 160Hz.
+Each participants performed 14 experiments each involving either imagining or actually performing opening and closing fists and feet. The BCI system followed the international
+10-20 system making it easy to construct MNE Raw frame.
+
+\subsubsection{Berlin BCI Competition}
+    This compettion was held for few years where the competitors had to come up with the best performing signal processing pipeline for dataset. This includes a list of various
+EEG datasets, this work uses the motor imagery dataset from BBCI III IV-a. The recordings were performed using 118-channel EEG system at a sampling rate of 1000Hz. It consists
+of 5 participants, each performing motor imaginaton of right fist or foot. The electrode locations in the BCI system is arbitrary and the location info was provided with the dataset.
+It required manual asssignment of locations to enable all the functionalities in MNE framework.
+
+From this point the word- dataset and data are used interchangibly and it is used to denote the data obtained from the OpenBCI headgear and the open source datasets unless specified.
 
 \section{Preprocessing}
+The data obtained needs to be processed effectively to get the best possible information and it influences the classification result dramatically. Most of the BCI systems in the
+literature use the following techniques to achieve the best results. 
 
 \subsection{Artifact removal techniques}
+    Any undesirable signals that originate outside the brain  are termed artifacts. Some of the artifacts are listed in the section \sec. Techniques that are used to remove such
+artifacts from relevant data are effective on one such artifact. Techniques described below are proved to be effective for this work. 
+
+\subsubsection{Band Pass}
+The information required to perform motor imagery classification is present in the low frequency region i.e 30Hz, hence bandpassing the signal between 5Hz and 40Hz removes the DC 
+offset and irrelavant information. It also avoids the need for a notch filter at 50Hz or 60Hz to remove the electric power line noises. 
 
 \subsection{Spatial Filtering}
+The potential that is measured at an electrode is overlap or a linear combination of several sources in the brain, this is primarily due to volume conduction. Given \mathcal{x}_i
+from n independent sources, the sum of all independent sources can be written as \ref{eq:spat_smear}.
 
-\subsection{Bipolar and Laplacian}
+\begin{equation} \label{eq:spat_smear}
+    \mathbb{C}^{j} = \sum_{n = i}^{n} w_{i}^{j} x_{i} = \mathbb{W^{j} X} 
+\end{equation}
+where $\mathbb{C}^{j} $ refers to measurement from arbitary channel $j$,  $\mathbb{W^j}$ represents the weight matrix for channel $j$ and $\mathbb{X}$ represents independent sources.
+Inherently brain signals are low in SNR, improving the SNR would enable increased classification accuracy. Spatial filtering achieves this by performing one of the following 
+- enhance local activity, reduce noise across channels, dimensionality reduction, identify hidden sources, find projections that maximize
+discrimination between different classes. The following techniques perform one of the above mentioned operations. Spatial Filters also help to invert measurement to the
+original source.
+
+\subsubsection{Bipolar and Laplacian Referencing}
+Rereferencing the measurement from the electrodes is one of the common methods that help to achieve better SNR.
+Consider measurement from channels $i$ and $j$, 
+In case of just two electrodes of interest, the potential difference between the two electrodes 
 
 \subsection{Common Average Referencing}
 

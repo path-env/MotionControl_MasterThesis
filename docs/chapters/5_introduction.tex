@@ -12,41 +12,28 @@ including human in the loop is necessary at certain times to avoid any undesirab
 but by bringing in a minimal interaction of the driver with the system, safety can be ensured. One of the ways of acheiving it is interfacing the
 thought and decission process of the driver to the autonomous vehicle, a process commonly referrred to as Brain-Computer interface. 
 
-Once shown in science fiction novels and movies, Brain-Computer interface has become widely researched and developed in the academic institutions 
+Once shown in science fiction novels and movies, Brain-Computer Interface (BCI) has become widely researched and developed in the academic institutions 
 and at industries in the past decades. It has been applied and tested on mammals for a wide range of applications. However it has its own challenges
 and limitations. With evolving technologies, new innovations and discoveries are made to understand and decode the brain waves better. The analysis
-of the brain signals have seen a shift in the paradigm with the introduction of machine learning techniques. This work focuses on brain signal analysis and decoding 
-using reliable and conventional signal processing techniques as well as state-of-the-art deep learning techniques to extract the features and classify
-it. Several open source datasets are used to setup the basic brain signal processing pipeline and later tuned to work with the data obtained form
-OpenBCI headgear with 16 electrodes. The goal of this work is to navigate a car in the CARLA simulator using brain signals obtained from the OpenBCI
-headgear in real-time.
+of the brain signals have seen a shift in the paradigm with the introduction of machine learning techniques. 
 
 Modern BCI design involves understanding brain dynamics, recognizing the patterns in the brain waves and derive the statistics of the data obtained
 optimize it and use them as features to predict or classify the task. However it is very challenging to create a BCI system that can work on any person
-as the brain signals are task specific and brain signal signatures are very unique to a person. The cortex fldings and the relevant functional maps are
+as the brain signals are task specific and brain signal signatures are very unique to a person. The cortex foldings and the relevant functional maps are
 differnet across individuals. Even for the very same person, the brain synamics are non-stationary at all time scales adding to it, it is almost impossible 
-to place the electrodes exactly on the same location for every recording sessions. The signal-to-noise ratio in a brain signal is very poor, that makes it
+to place the electrodes exactly on the same location for every recording sessions. Further the psychological states of the user such as boredom, distraction\dots
+play a significant role in the quality of the signal measured. The signal-to-noise (SNR) ratio in a brain signal is very poor, that makes it
 difficult to obtain required information from brain signal. It is harder to spatially measure the data from one region as large collection of neurons
-are involved in many different activity, not just one. These challenges can vary a lot depending on the methods used to record and analyse the brain signals.
+are involved in many different activity, not just one. These challenges can vary a lot depending on the methods used to record and analyse the brain signals
+as well as the task that needs to be achieved.
 
-
-\section{Brain Signal Acquisition}
-Neurons are the basic computational unit of the nervous system. The electric signal recorder as brain wave is the result of electrochemical interations
-that occur at the outer membrane of neurons. In case of a event, the raises and falls of potential at the membrane of the neuron is called as action potential.
-The electrical activity at the neurons enable us to record and decode the brain activities. There are many ways to record the electrical activity and 
-are broadly classified into- invasive and non-invasive recording.
-
-    \subsection{Invasive Approaches}
-
-    \subsection{NonInvasive Approaches}
-
-\section{EEG Paradigms}
-
-    \subsection{Event Related Potential(ERP)}
-
-    \subsection{Error Related Potential(ErRP)}
-
-    \subsection{Motor Imagery(MI) or Oscillatory Potential}
-
+Given the challenges, the goal of this work is to steer a simulated car in the CARLA environment using brain signals obtained from the OpenBCI headgear in real-time.
+The brain signal from 16 channel OpenBCI headgear is fed through signal processing pipeline to extract the relevant motor imagery features and classify it.
+The signal preprocessing pipeline constitutes reliable and conventional signal processing techniques as well as state-of-the-art deep learning techniques.
+Several tools, libraries and frameworks such as MNE, Numpy, Scipy, Scikit-learn and PyTorch are used to achieve the goal.
+The communication between the OpenBCI system and the signal processing pipeline is established using Lab Streaming Layer (LSL) and the steering information
+decoded by the signal processing pipeline is sent to CARLA through ROS1. The algorithms are packed into a ROS pack which consists of multithreaded nodes enabling
+real-time information transfer to CARLA. All the relevant code and references are made available in github. Several open source datasets are used to setup the basic 
+brain signal processing pipeline and later tuned to work with the data obtained form OpenBCI headgear. 
 
 \section*{Summary} 
