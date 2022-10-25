@@ -1,6 +1,10 @@
-from unicodedata import name
 import numpy as np
-import torch
+import mne
+import glob
+import  data.brain_atlas  as bm
+from data.params import OCIParams
+
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import plotly.express as px
 import brainflow as bf
@@ -8,22 +12,36 @@ from scipy.signal import butter,lfilter
 from scipy.fft import fft, fftfreq, fftshift
 import plotly.io as pio
 import plotly.graph_objects as go
-import mne
-from sklearn.model_selection import train_test_split
 
-def extractOCI(runs, person_id):
-    filename = 'Raw_P1_reoorganised2.npz'
-    train = np.load(f'/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/data/{filename}', allow_pickle=True)
-    train_x = np.float64(train['arr_0'])
-    event_t = train['arr_1']
-    train_y = train['arr_2']
 
-    sfreq = 80.0
-    ch_names = ['Fp1','Fp2','C3', 'C4','P7', 'P8', 'O1', 'O2', 'F7', 'F8','F3', 'F4','T9','T10', 'P3', 'P4']
-    ch_types = ['eeg'] * 16
-    info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types);
-    raw = mne.io.RawArray(train_x, info);
-    locinfo = mne.io.read_raw_fif('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/extraction/Physionet_ChLoc_raw.fif', preload = False)
+def extractOCI(runs= [], person_id = [], Expr_name = 'P2_Day*_125'):
+    dCfg = OCIParams()
+    sfreq = dCfg.sfreq
+    ch_names = bm.oci_Channels
+    ch_types = ['eeg'] * len(ch_names)
+    info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types);  
+    
+    train_x, train_y,events = [],[], []
+    Expr_name = 'Raw_'+Expr_name+'.npz'
+    filename = f'/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/data/{Expr_name}'
+    for file in glob.glob(filename):
+        train = np.load(file, allow_pickle=True)
+        train_x.append(np.float64(train['arr_0']))
+        events.append(train['arr_1'])
+        train_y.append(train['arr_2'])
+
+    train_x = np.hstack(train_x)
+    train_y = np.hstack(train_y)
+    event_t = np.hstack(events)
+
+    t = train_x.shape[-1]/sfreq
+    t = np.arange(t)
+    t = t.reshape(event_t.shape[0],-1)
+    event_t = t[:,7]
+    
+    raw = mne.io.RawArray(train_x, info, verbose=False);
+    locinfo = mne.io.read_raw_fif('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/extraction/Physionet_ChLoc_raw.fif',
+                 preload = False, verbose=False)
     locinfo.pick_channels(raw.ch_names)
     raw._set_channel_positions(locinfo._get_channel_positions(), locinfo.ch_names)
     event_data = np.uint16(np.column_stack((event_t, np.zeros((len(train_y,))),train_y)))
@@ -33,7 +51,7 @@ def extractOCI(runs, person_id):
     return raw
 
 if __name__ == "__main__":
-    extractOCI(1,1)
+    extractOCI(1,1, Expr_name = 'P2_Day*_125') #['Raw_P2_Day1_80.npz','Raw_P2_Day2_80.npz'])
     '''
     # raw.plot_sensors(show_names = True);
 

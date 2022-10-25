@@ -74,8 +74,9 @@ class BrainSignalAnalysis():
 
         # %%
         # Remove and Filter signal noises
-        raw.notch_filter(elec_lines_f)
-        rawfltrd = raw.filter(L_cutoff, H_cutoff, verbose= False, fir_design='firwin', skip_by_annotation='edge').copy()
+        # raw.notch_filter(elec_lines_f)
+        rawfltrd = raw.filter(L_cutoff, H_cutoff, verbose= False, fir_design='firwin', 
+                                skip_by_annotation='edge').copy()
 
         # Referncing to reference electrodes
         # rawfltrd = rawfltrd.set_eeg_reference(self.dCfg.inion)
@@ -157,7 +158,7 @@ class BrainSignalAnalysis():
         # ##### Common Average Reference(CAR) (Projector)
         ## TODO- Remove bads prior
         if method.find('car')!=-1:
-            rawfltrd.set_eeg_reference(ref_channels='average', projection=True);
+            rawfltrd.set_eeg_reference(ref_channels='average', projection=True, verbose = False);
             ## Analysis after Projections
             if self.plot_enable ==1:
                 # rawfltrd_ssp.plot_projs_topomap();
@@ -173,15 +174,16 @@ class BrainSignalAnalysis():
         if method.find('ica')!=-1:
             # cov = mne.Covariance()
             # rawfltrd_ica = rawfltrd_car.apply_proj().copy()
-            ica = mne.preprocessing.ICA(n_components=self.dCfg.ica_n_comp, noise_cov= None, random_state=2, method='picard',max_iter=500)
+            ica = mne.preprocessing.ICA(n_components=self.dCfg.ica_n_comp, noise_cov= None, random_state=2,
+                                     method='picard',max_iter=500, verbose=False)
             # Create an instance of RAW
             # rawfltrd_ica = raw.copy()
             rawfltrd.apply_proj()
-            ica.fit(rawfltrd);
+            ica.fit(rawfltrd, verbose=False);
             # n_components  = 10 then ica.exclude = [1,2]
             ica.exclude = []
             # Using EOG Channel to select ICA Components
-            ica.exclude , ex_scores = ica.find_bads_eog(rawfltrd, ch_name= self.dCfg.eog_ref_ch);#,threshold=2);
+            ica.exclude , ex_scores = ica.find_bads_eog(rawfltrd, ch_name= self.dCfg.eog_ref_ch, verbose = False);#,threshold=2);
 
             # %%
             ## TODO: ICA template matching for Multiple subjects
@@ -204,7 +206,7 @@ class BrainSignalAnalysis():
                 ica.plot_scores(ex_scores);
 
             # ica.exclude = [0,1,2,3] # manually exclude ICA components based on observation on plots above
-            rawfltrd = ica.apply(rawfltrd) # Reconstructed sensor data (In Senso space)
+            rawfltrd = ica.apply(rawfltrd, verbose=False) # Reconstructed sensor data (In Senso space)
             if self.plot_enable ==1:
                 rawfltrd.plot(scalings=self.scale, clipping='transparent', title='ICA  on RAW', proj= False); # , order=pick_ch_idx
                 # rawfltrd.plot(scalings=self.scale, clipping='transparent', title='Raw Filtered- w Projection', proj=True); #, order=pick_ch_idx
@@ -224,7 +226,7 @@ class BrainSignalAnalysis():
         # %% 
         # ### Create Epcohs from events
         # Capture events from annotations
-        event_data = mne.events_from_annotations(rawfltrd)
+        event_data = mne.events_from_annotations(rawfltrd, verbose=False)
         event_marker, event_ids = event_data
         idx = event_marker[:,-1].argsort()
         event_marker = event_marker[idx,:]
@@ -232,7 +234,7 @@ class BrainSignalAnalysis():
         self.classes = list(event_ids.keys())
         # epochs1 = mne.Epochs(rawfltrd, events= event_marker, event_id= event_ids, baseline = (0,0))
         epochs = mne.Epochs(rawfltrd, events= event_marker, tmin= self.dCfg.tmin, tmax=self.dCfg.tmax, event_id= event_ids, on_missing = 'ignore',  
-                        verbose= True, proj= True, reject = None, baseline=(None,-5)) # Baseline is default (None,0)
+                        verbose= False, proj= True, reject = None, baseline=self.dCfg.baseline, preload = True) # Baseline is default (None,0)
         # epochs.equalize_event_counts() # Shape = epochs x chan x timepnts
         self.rawfltrd = rawfltrd
         # epochs.load_data()
@@ -273,7 +275,8 @@ class BrainSignalAnalysis():
             self.epochs = mne.read_epochs(epoch_file)
             self.classes = list(self.epochs.event_id.keys())
             # self.epochs = self.epochs[self.classes[:2]] # for binary classification
-
+            
+        # self.epochs.load_data()
         self.labels = self.epochs.events[:,-1]
         if not self.labels.__contains__(0):
             self.labels = self.labels-1
@@ -501,7 +504,7 @@ if __name__ =='__main__':
     classi_methods = feat_extract_methods+'_CNN'
     
     methods = 'locl_IMG_EEGnet_CNN'
-    methods = f'locl_ssp_car_ica_TF_LDA_ML_{0}_{0}'
+    methods = f'locl_ssp_car_ica_RAW_{0}_{0}'
 
     start = time()
     bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg)
