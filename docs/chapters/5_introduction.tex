@@ -1,4 +1,4 @@
-\section*{Introduction}
+% \section*{Introduction}
 Human computer interaction has been evolving over the past decades, with evolving human needs. With developments in technologies, the physical 
 contact between the computer and the human is decreasing rapidly. Advanced systems which work on speech and gesture control still requires a minimal
 effort from the user to interact with the machine. Though these effort seem to be mere, it is a challenging task for humans with disabilities. 
@@ -33,7 +33,25 @@ The signal preprocessing pipeline constitutes reliable and conventional signal p
 Several tools, libraries and frameworks such as MNE, Numpy, Scipy, Scikit-learn and PyTorch are used to achieve the goal.
 The communication between the OpenBCI system and the signal processing pipeline is established using Lab Streaming Layer (LSL) and the steering information
 decoded by the signal processing pipeline is sent to CARLA through ROS1. The algorithms are packed into a ROS pack which consists of multithreaded nodes enabling
-real-time information transfer to CARLA. All the relevant code and references are made available in github. Several open source datasets are used to setup the basic 
+real-time information transfer to CARLA. All the relevant code and references are made available in github. Several open-source datasets are used to setup the basic 
 brain signal processing pipeline and later tuned to work with the data obtained form OpenBCI headgear. 
+
+\section{OpenBCI headgear}
+OpenBCI is an open-source BCI platform that develops hardware and software for BCI scientific research. It provides electrodes, interface boards, graphical user interface 
+and pythonAPI. In this work, the openBCI system consists of a 3D printed headgear with 16 EEG electrodes connected to Cython + Daisy board that interacts to the host machine wireless 
+through an external dongle via 
+serial communication. Cython is a 8-channel neural interface with a 32-bit processor which has a sampling frequency of 250Hz. It is topped with Daisy, an extension board which 
+can add upto 8 more channels to the system. This leads to drop in the sampling frequency to 125HZ. With a WiFi module it is possible to achieve 1kHz.
+The potential difference between the electrodes and the reference points such as 
+linked mastoids, inion or nasion. The measurements can be visualized on the host machine using OpenBCI GUI. The electrodes are placed in the internationally recognized 10-20 system.
+The measurement data can be streamed to the system through BrainFlow or Lab Streaming Layer (LSL). 
+
+\section{CARLA}
+CARLA is an open-source simulator to develop, train and validate autonomous driving systems. It supports Robotic Operating System (ROS1) for establishing communication between CARLA
+server and clients that can feed into or extract data from CARLA environment.
+
+\section{MNE}
+MNE is an open-source python package for exploring, visualizing and analyzing neurophysiological data. It provides support for various preprocessing, feature extraction and classification
+steps in brain signal analysis.
 
 \section*{Summary} 

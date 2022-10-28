@@ -1,23 +1,164 @@
 \section*{Introduction}
+The data after preprocessing is clean from noise and other artifcats, now the feature extracted 
+Brain signals are transient as well as diffuse spike and action potential. The include small oscillaions of 
+semi periodic activations. Therefore the local information exists in time or frequency domain or both.
+It is rhythemic and hence could be sinusoidal or non-sinusoidal. 
+The brain signals could be time locked i.e. the activity in the brain is time synchronized with the stimulus or the temporal dynamics is the same across 
+every trials at the same instance. It could be phase locked as well i.e. the phase angle time series is the same or similar on every trial.
 
-\section{Time Domain Analysis}
 
-\section{Frequency Domain Analysis}
 
-\section{Fourier Analysis}
+\section{Feature Extraction}
 
-\section{Fast Fourier Transform}
 
-\section{Time-Frequency Analysis}
+\subsection{Time Domain Analysis}
+Time domain analysis is useful in extracting temporal features in the preprocessed measurement. Some of the commonly
+used time domain analysis methods include signal averaging, Hjorth parameters, Fractal dimensions, auto regressive models
+Bayesian filtering, Kalman filtering, particle filtering, zero crossing, template matching, power and window detection.
 
-\section{Spatial Analysis}
+Time domain analysis leads to loss of information on averaging several trials in case of non-phase locked brain signals, but 
+frequency analysis doesn't lose information on averaging trials.
 
-\subsection{Common Spatial Patterns}
+\subsection{Frequency Domain Analysis}
+Transforming the preprocessed data into frequency domain provides more useful information on the brain signal required for analysis.
+Imagined movements leads to oscillations in premotor and sensorimotor areas which is observed as amplitude changes in the $\mu$, $\beta$ and $\gamma$ region.
+These features can be used to create feature vectors. Some of the common frequency domain analysis are fourier transform, short-time fourier transform 
+and welch transform. These methods provide information on the spectral contents of the signal but do not proovide information on 
+temporal information on the event. 
 
-\section{Wavelet Analysis}
+\subsubsection{Fourier Transform (FT)}
+Fourier transform decomposes signal into a weighted sum of sine and cosine waves of different frequencies. Fourier transforms work on the assumptions that the
+signal is infinite, periodic and stationary. Brain signals do not hold to these assumptions. These shortcomings 
+can be over come by using short window periods for analysis, termed as Short Time Frequency Transform (STFT). Another commonly used method for 
+frequency domain analysis is welch transform that provides smooth spectral decomposition.
 
-\subsection{Wavelet Transform}
+Transforming time domain signals to frequency domain provides amplitude and phase information. Phase content is not used in brain signal analysis in most cases
+as the signal could be non-phase locked. The amplitude spectrum is generally used in feature extraction. Power spectrum is obtained by 
+square of amplitude in different frequency components during course of the task. 
+
+\begin{equation} \label{eq:pwr}
+    P(n) = A(n)^2
+\end{equation}
+
+\subsection{Time-Frequency Analysis (TFA)}
+The method discussed above do not provide temporal information on occurence of the event. Time-Frequency analysis on the signal provides temporal-spectral information
+on the signal. One of the most commonly used TFA method is wavelet transform
+
+\subsubsection{Wavelet Transform (WT)}
+Wavelet transform uses finite basis functions called wavelets that are scaled and translated copies of finite length waveform called mother wavelet. Wavelets divide the signals
+of interest into different frequency components, each component can be studied at resultion matched for its scale. A large scale component produces coarse resolution and small 
+scale component produces fine resolution. The wavelet transform provides lower frequency resolution and higher temporal resolution at higher frequencies whereas 
+higher frequency resolution and lower temporal resolution at lower frequencies.
+
+Wavelet analysis is performed by convolution of wavelets of different scale and resolution with the signal of interest. The result of convolution  contains components of the signal
+that are in the same frequency of the wavelet used. Scalogram provides graphical information on the time and frequency of the signal. The transform could be either 
+discrete or continuous depending upon the scale and translation parameters. Contininous Wavelet Transform (CWT) provides more resolution than the Discrete Wavelet Transform (DWT).
+
+A generic CWT function can be written as \ref{cwt}
+
+\begin{equation} \label{eq:cwt}
+    \psi_{a,b}(t) = \frac{1}{\sqrt{a}} \psi( \frac{t - b}{a}) 
+\end{equation}
+
+where $t$ denotes time, $b$ is the shift parameter that slides the waveform along the time axis and $a$ is the scale factor that is used to scale the frequency of the wavelet.
+
+Generally for a given wavelet function $\psi(\frac{t}{a})$ when $a > 1$ the mother wavelet dilates and it helps in capturing low frequency component and when $0 < a < 1$ it 
+compresses the mother wavelet, capturing the high frequency componenets in the signal of interest. Thus $a \propto \frac{1}{f}$.
+
+Wavelets have bandpass characteristics and its equivaent frequency can be determined by 
+
+\begin{equation} \label{eq:wt_cf}
+    F_{eq} = \frac{C_f}{a\delta_t}
+\end{equation}
+
+where $F_{eq}$ is the equivalent frequency, $C_f$ is the centre frequency, $a$ is the scaling factor and $\delta_t$ is the sampling intreval.
+
+A generic DWT funtion can be written as \ref{dwt}
+
+\begin{equation} \label{eq:dwt}
+    \psi_{a,b}(t) = \frac{1}{2^{\frac{j}{v}}} \psi( \frac{n - m}{2^{\frac{j}{v}}}) 
+\end{equation}
+
+where $j$ are the available scales, $v  (>1)$ denotes voices per octave (lograthamic unit of ratio between two frequencies) and $m$ is the translational parameter.
+
+% Table about wavelet scale
+
+
+Various types of wavelets are used in research and one of the commonly used wavelet is the Morlet Wavelet. It the product of complex valued sine wave and gaussian.
+In frequency domain,  The amplitude spectrum of the complex morlet wavelet is not symmetrical and the power results are independent of the phase relation between 
+the wavelet and signal.
+The Complex Morlet Wavelet can be written as \ref{Mrlt1}
+
+\begin{equation} \label{eq:Mrlt1}
+    e^{i2\pi ft -0.5(\frac{t}{\sigma})^2}
+\end{equation}
+
+where $\sigma = \frac{n}{2\pi f}$, $n$ is the number of cycles, $f $is the frequency of the complex sine wave used.
+
+The equation \ref*{Mrlt} can also be written as  \ref*{Mrlt2}
+
+\begin{equation} \label{eq:Mrlt2}
+    e^{i2\pi ft} e^{-4\ln(2)\frac{t^2}{h^2}}
+\end{equation}
+
+where $h$ is the full width half maximum (FWHM) parameter. With higher $n$, better temporal resolution and with lower $n$ better spectral resolution is achieved. Most algorithms
+work by starting with low number of cycles and gradually increasing to higher number of cycles.
+
+However the results of the wavelet convolution are easily interpretable only for stationary signals within the FWHM of the wavelet. With the right design of
+the wavelet this can be achieved.
 
 \subsection{Wavelet Scattering Transform}
+
+\subsection{Spatial Analysis}
+The spaial filters invert the measurement to the original source
+Spatial Analysis helps in mapping the source signals to the brin topography
+
+\subsubsection{Common Spatial Patterns (CSP)}
+CSP is a supervised feature extraction method for classification algorithms which works only for motor-imagery information in EEG . It learns to optimally
+discriminate band power features. Variance of the band pass signal is proportional to the band power of the frequency band. CSP leverages this by finding patterns
+where the  variance of filtered data from one class is maximized while variance of filtered data from other class is minimized. The resulting feature
+vector enhance discriminability between different classes. However it works on the assumptions that frequency band and time window of the measurements are known, source
+activity constellation differs between two classes and the band passed signal is jointly gaussian within the time window. 
+
+Consider measurement data set $\{\mathbb{X}^{i}_{c}\}^{k}_{i=1}$ for trial $i$ belonging to class $c \in\{1,2\}$. Each $\{\mathbb{X}^{i}_{c}\}$ is a $N * T$ matrix, where
+N is the number of channels and T is the number of samples per channel. The goal of CSP is to find $W$ given by $N * M$, consisting M spatial filters i.e. each column is a spatial
+filter , that transforms the measured signals \ref*{trans_csp}.
+
+\begin{equation} \label{eq:trans_csp}
+    x_{CSP}(t) = W^{T}x(t)
+\end{equation}
+
+where $x(t)$ is vector of input signals at time $t$ from all channels. CSP can formally be defined for a two class problem as \ref{def_csp}.
+
+\begin{equation} \label{eq:def_csp}
+    J(w) = \frac{wX_{1}X_{1}^Tw^T}{wX_{2}X_{2}^Tw^T} \\
+         = \frac{wC_{1}w^T}{wC_{2}w^T}
+\end{equation}
+
+where $C_{c}$ is the spatial covariance matrix for class $c$, w is the spatial filter to optimize and $X_{c}$ is the multichannel EEG signal from class $c$.
+
+The problem could be solved to either minimize $J(w)$ where variance in $X_{1}$ is minimized and maximized in $X_{2}$ or maximize $J(w)$ where variance in $X_{1}$ is 
+maximized and minimized in $X_{2}$.
+
+This can be computed by Generaized Eigen Value Decomposition (GEVD) of $C_{1}$ and $C_{2}$. The Eigen vectors corresponding to the largest eigen value will maximize $J(w)$.
+and eigen vectors corresponding to the smallest eigen value will minimize $J(w)$. Typically 3 CSP filter pairs i.e. minimization and maximization are used which results in
+6 feature vectors that forms the filter matrix $w$.
+
+Once filter is obtained, the prediction function using CSP can be defines as \ref*{feat_csp}
+
+\begin{equation} \label{eq:feat_csp}
+    y = sign(\theta log(var(wX)) +b) = sign(\theta log(wCw^T) + b)
+\end{equation}
+The application of log on the spatially filtered data makes it a gaussian distribution. The classifier applied can be either linear or nonlinear. After applying CSP 
+the data is rotated and placed orthogonal.
+
+CSP is simple, computationally efficient with high classification performance. But it is not robust to noise and nonstationaries, prone to overfitting and requires
+many training examples.
+
+Several variants of CSP are researched and developed such as Filter Bank CSP, Regularized CSP, Invariant CSP\dots to overcome the disadvantages of vannila CSP.
+
+\section{Feature Selection} 
+
+\section{Classification}
 
 \section*{Summary}
