@@ -117,8 +117,9 @@ refchannels = [#'T9',
  'Fp2',# for EOG Projection/ ICA reference
  'Fpz']# for EOG Projection/ ICA reference
 
-oci_Channels = ['F3', 'F4', 'C3', 'C4', 'P3', 'O1', 'O2', 
-'P4', 'T7', 'T8', 'F7', 'F8', 'P7', 'P8', 'Fp1','Fp2']
+oci_Channels = ['Fp1','Fp2','C3', 'C4','P7', 'P8', 'O1', 'O2', 'F7', 'F8','F3', 'F4','T9','T10', 'P3', 'P4']  
+
+old = ['Fp1','Fp2','F3', 'F4', 'F7', 'F8','T7','C3', 'C4','T8', 'P3', 'P4', 'P7', 'P8', 'O1', 'O2']
 #%%
 F_Channels = list(set(FL_Channels + FR_Channels + refchannels))
 C_Channels = list(set(CL_Channels + CR_Channels + refchannels))

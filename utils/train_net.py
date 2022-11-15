@@ -30,11 +30,12 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
     # tb_comment = f'batch_size={nCfg.train_bs}, lr={nCfg.lr}'
     # tb = SummaryWriter(tb_info[0], filename_suffix= tb_info[1])
     history = []
+    lr = []
     best_acc = 0.0
     print('###############Train and Validate######################')
     for epoch in range(epochs):
-        train_data_size = train_loader.dataset.x.shape[0]
-        validation_data_size = val_loader.dataset.x.shape[0]
+        train_data_size = data.train_idx.shape[0]
+        validation_data_size = data.val_idx.shape[0]
         epoch_start = time.time()
 
         # Loss and Accuracy within the epoch
@@ -72,6 +73,7 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
             else: # Binary classification
                 overall_predic_train.append(torch.round(torch.sigmoid(outputs)).tolist())
         LRscheduler.step()    
+        lr = (LRscheduler.get_last_lr()[0])
 
         # Validation - No gradient tracking needed
         with torch.inference_mode():
@@ -128,7 +130,7 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
         tb.add_scalar('recl_train', recl_train, epoch)
         # tb.add_scalar('ROC_train', roc, epoch)
         tb.add_scalar('train_loss', avg_train_loss, epoch)
-
+        tb.add_scalar('lr', np.array(lr), epoch)
         prec_val, recl_val, f1_val, _ = metrics.precision_recall_fscore_support(overall_label_val, 
                         overall_predic_val, zero_division=1, average='weighted', labels=label)
         acc_val  = metrics.accuracy_score(overall_label_val, overall_predic_val)
@@ -158,8 +160,8 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
                 
         epoch_end = time.time()
         
-        print(f"Epoch : {epoch+1}|{epochs}, Training: Loss: {avg_train_loss:.3f}, Accuracy: {acc_train*100:.3f}%, \n\t\tValidation: Loss : {avg_valid_loss:.3f}, Accuracy: {acc_val*100:.3f}%, Time: {epoch_end-epoch_start:.4f}")
-
+        print(f"Epoch : {epoch+1}|{epochs}, Training: Loss: {avg_train_loss:.3f}, Accuracy: {acc_train*100:.3f}%, \n\r\t\tValidation: Loss : {avg_valid_loss:.3f}, Accuracy: {acc_val*100:.3f}%, Time: {epoch_end-epoch_start:.4f}",end='\r')
+        print(' ')
         if opt_trial != False:
             opt_trial.report(train_acc, epoch)
 

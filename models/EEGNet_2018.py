@@ -26,17 +26,17 @@ class EEGnet(nn.Module):
         self.F2 = F2
         self.D = D
         self.dt = dt
-        self.filterlength = int(np.round(self.sf/2))
+        self.filterlength = int(np.round(self.sf/2))-1
 
         """        
         # self.conv = nn.Sequential(
         #     nn.Conv2d(1,self.F1,(1,self.filterlength)),
-        #     nn.ReLU(),
+        #     nn.relu(),
         #     nn.BatchNorm1d(self.F1) )
 
         # self.depthwiseConv2D = nn.Sequential(
         #     nn.Conv2d(self.F1,self.D*self.F1,kernel_size=(self.C,1),groups=self.F1),
-        #     nn.ReLU(),
+        #     nn.relu(),
         #     nn.BatchNorm1d(self.F1),
         #     nn.ELU(),
         #     nn.AvgPool2d((1,4)),
@@ -44,7 +44,7 @@ class EEGnet(nn.Module):
 
         # self.separableConv2D = nn.Sequential(
         #     nn.Conv2d(16,self.F2, kernel_size=(1,self.C)),
-        #     nn.ReLU(),
+        #     nn.relu(),
         #     nn.BatchNorm1d(self.F2),
         #     nn.ELU(),
         #     nn.AvgPool2d((1,8)),
@@ -58,19 +58,25 @@ class EEGnet(nn.Module):
         """
 
         # Block1
-        self.conv2d1 = nn.Conv2d(1,self.F1,(1,self.filterlength), padding='same', bias=False) # kernel = sfreq//2
+        self.dropout = nn.Dropout2d(0.25)
+        self.conv2d1 = nn.Conv2d(1, self.F1, kernel_size=(1,self.filterlength), padding='same', bias=False) # kernel = sfreq//2
+        # self.conv2d2 = nn.Conv2d(self.F1, self.F1*2, (1,int(self.filterlength/2)), padding='same', bias=False) # kernel = sfreq//2
+
+        # self.conv2d3 = nn.Conv2d(self.F1*2, self.F1*3, (1,int(self.filterlength/3)), padding='same', bias=False) # kernel = sfreq//2
+
         self.batchnorm1 = nn.BatchNorm2d(self.F1)
-        self.depthconv2d1 = nn.Conv2d(self.F1,self.D*self.F1,
+        self.depthconv2d1 = nn.Conv2d(self.F1,self.D*self.F1, #padding='same',
                                     kernel_size=(self.C,1),groups=self.F1, bias=False)
         self.batchnorm11 = nn.BatchNorm2d(self.D*self.F1)
         self.averagePool1 = nn.AvgPool2d((1,4))
         self.dropout1 = nn.Dropout(self.dt)
 
         #Block2
-        self.sepconv2d1 = nn.Conv2d(self.D*self.F1, self.D*self.F1, (1,self.filterlength), padding='same', bias=False,
-                            groups=self.D*self.F1) # kernel = freq of interest//2
-        self.sepconv2d2 = nn.Conv2d(self.D*self.F1,self.F2, kernel_size=(1,1), bias=False)
-        self.batchnorm2 = nn.BatchNorm2d(self.F2)
+        self.sepconv2d1 = nn.Conv2d(self.D*self.F1, self.F2, (1,self.filterlength), padding='same', bias=False)
+                            # groups=self.D*self.F1) # kernel = freq of interest//2
+        # self.batchnorm2 = nn.BatchNorm2d(self.D*self.F1)
+        # self.sepconv2d2= nn.Conv2d(self.D*self.F1, self.F2, kernel_size=(1,1), bias=False, padding='same')
+        self.batchnorm3 = nn.BatchNorm2d(self.F2)
         self.averagePool2 = nn.AvgPool2d((1,8))
         self.dropout2 = nn.Dropout(self.dt)
 
@@ -86,19 +92,30 @@ class EEGnet(nn.Module):
         # x = self.classifier(x)
 
         # x with RAW/TF batch x cCH x EEGch x ts
-        x = nn.functional.relu(self.conv2d1(x)) # bs x F1 x EEGch x ts
-        x = self.batchnorm1(x) # bs x F1 x EEGch x ts
-        x = nn.functional.relu(self.depthconv2d1(x))# bs x F1 x EEGch x ts
-        x = nn.functional.elu(self.batchnorm11(x))
+        x = self.conv2d1(x) # bs x F1 x EEGch x ts
+        # x = self.dropout(x)
+        # x = self.conv2d2(x)
+        # x = self.dropout(x)
+        # x = self.conv2d3(x)
+        x = torch.relu(self.batchnorm1(x)) # bs x F1 x EEGch x ts
+        x = self.depthconv2d1(x) # bs x F1 x EEGch x ts
+        x = torch.relu(self.batchnorm11(x))
+        # x = self.dropout1(x)
         x = self.averagePool1(x)
         x = self.dropout1(x)
-        x = nn.functional.relu(self.sepconv2d1(x))
-        x = nn.functional.relu(self.sepconv2d2(x))
-        x = nn.functional.relu(self.batchnorm2(x))
+
+        # x = nn.functional.relu(self.sepconv2d1(x))
+        x = self.sepconv2d1(x)
+        # x = torch.relu(self.batchnorm2(x))
+        # x = self.sepconv2d2(x)
+        x = torch.relu(self.batchnorm3(x))
+        # x = self.dropout2(x)
         x = self.averagePool2(x)
         x = self.dropout2(x)
+
         x = torch.flatten(x,1)
-        x = nn.functional.relu(self.fc1(x))
+        x = torch.relu(self.fc1(x))
+        # x = self.dropout2(x)
         if self.n_classes == 1:
             x = torch.flatten(self.fc2(x))
         else:
