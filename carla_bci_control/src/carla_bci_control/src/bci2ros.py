@@ -166,9 +166,9 @@ class BCIControl(object):
     
     def _steer_cmd(self, steerval):
         try:
-            self._steer_cache = steerval.data
+            self.steer_op = steerval.data
         except Exception as error:
-            self.node.logwarn("Could not send steer message: {}".format(error))
+            self.node.logwarn("Could not read steer message: {}".format(error))
 
     def _parse_vehicle_keys(self, keys, milliseconds):
         """
@@ -178,23 +178,23 @@ class BCIControl(object):
         # steer_prob = self.bci_thread.prob
         # steer_prob = data
         self._control.throttle = 1.0 if keys[K_UP] or keys[K_w] else 0.2
-        # steer_increment = 5e-4 * milliseconds
+        steer_increment = 5e-4 * milliseconds
 
         # steer_op = torch.argmax(steer_prob)
-        # if steer_op == self.dCfg.event_dict_rec['none']:
-        #     self.hud.notification('BCI - Steer Neutral')            
-        #     self._steer_cache =0
-        # elif steer_op == self.dCfg.event_dict_rec['left']:
-        #     self.hud.notification('BCI - Steer Left')    
-        #     self._steer_cache -= steer_increment
-        # elif steer_op == self.dCfg.event_dict_rec['right']:
-        #     self.hud.notification('BCI - Steer Right')    
-        #     self._steer_cache += steer_increment
-        # else:
-        #     self.hud.notification('BCI - Unknown command')   
-        #     self._steer_cache = 0.0
+        if self.steer_op == self.dCfg.event_dict_rec['none']:
+            self.hud.notification('BCI - Steer Neutral')            
+            self._steer_cache =0
+        elif self.steer_op == self.dCfg.event_dict_rec['left']:
+            self.hud.notification('BCI - Steer Left')    
+            self._steer_cache -= steer_increment
+        elif self.steer_op == self.dCfg.event_dict_rec['right']:
+            self.hud.notification('BCI - Steer Right')    
+            self._steer_cache += steer_increment
+        else:
+            self.hud.notification('BCI - Unknown command')   
+            self._steer_cache = 0.0
 
-        # self._steer_cache = self.steer_val #min(0.7, max(-0.7, self._steer_cache))
+        self._steer_cache = min(0.5, max(-0.5, self._steer_cache))
         self._control.steer = round(self._steer_cache, 3)
         print(f'Steer Value: {self._control.steer}')
         self._control.brake = 1.0 if keys[K_DOWN] or keys[K_s] else 0.0

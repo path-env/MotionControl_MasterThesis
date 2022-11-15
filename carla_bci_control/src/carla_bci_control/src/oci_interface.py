@@ -195,21 +195,22 @@ class OpenBciInterface(CompatibleNode):
         prob = torch.softmax(op, dim =1)
         op = torch.argmax(prob)
         # print(op)
-        steer_increment = 5e-2 #* milliseconds
+        # steer_increment = 5e-2 #* milliseconds
 
-        if op == self.dCfg.event_dict_rec['right']:
-            self.steer+=(steer_increment)
-            action = 'Steer right'
-        elif op == self.dCfg.event_dict_rec['left']:
-            self.steer-=(steer_increment)
-            action = 'Steer left'
-        elif op == self.dCfg.event_dict_rec['none']:
-            self.steer+=0
-            action = 'No Steer'
+        # if op == self.dCfg.event_dict_rec['right']:
+        #     self.steer+=(steer_increment)
+        #     action = 'Steer right'
+        # elif op == self.dCfg.event_dict_rec['left']:
+        #     self.steer-=(steer_increment)
+        #     action = 'Steer left'
+        # elif op == self.dCfg.event_dict_rec['none']:
+        #     self.steer+=0
+        #     action = 'No Steer'
 
-        steer = min(0.7, max(-0.7,self.steer))
+        # steer = min(0.7, max(-0.7,self.steer))
         # print(f'{action}, {steer}')
-        self.steer_cmd.publish(steer)
+        self.steer_cmd.publish(op.item())
+        # print(op.item())
         # self.control.steer = steer
         # self.egoCMD.publish(self.control) 
         self.prob = prob
@@ -222,7 +223,7 @@ if __name__ =="__main__":
     jit_model = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/EEGnet.pt'
     try:
         oci_node = OpenBciInterface(jit_model)
-        oci_node._genLSL()
+        # oci_node._genLSL() # comment this for online
         oci_node._mne_stream()
         executor = roscomp.executors.MultiThreadedExecutor()
         executor.add_node(oci_node)
