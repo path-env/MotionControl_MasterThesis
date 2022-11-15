@@ -1,189 +1,117 @@
 \section*{Introduction}
-    The goal of this work is to control the simulated car in CARLA using motor intent from the users brain activity. Motor Imagery is the information that needs 
-to be extracted from the EEG data. There are several other information that can be  obtained and are broadly classified into Spontaneous EEG and Evoked Potential which are 
-briefly explained.
+    The goal of this work is to control the simulated car in CARLA using motor intent from the users brain activity. Motor Imagery is the information that needs to be extracted from the EEG data. There are several other information that can be  obtained and are broadly classified into Spontaneous EEG and Evoked Potential which are briefly explained.
 
 \section{Brain Signal Acquisition/ Extraction}
-Neurons are the basic computational unit of the nervous system. The electric signal recorder as brain wave is the result of electrochemical interations
-that occur at the outer membrane of neurons. In case of a event, the raises and falls of potential at the membrane of the neuron is called as action potential.
-The electrical activity at the neurons enable us to record and decode the brain activities. There are many ways to record the electrical activity and 
-are broadly classified into invasive and non-invasive recording. Some technologies can also be used to stimulate neurons or brain regions, that allows BCIs
-to send feedback to brain based on interactions with the world. This work is only on Electroencephalography, a  noninvasive approach, hence the topic on
-invasive approaches and other noninvasive approaches are just briefly touched.
+Neurons are the basic computational unit of the nervous system. The electric signal recorder as brain wave is the result of electrochemical interations that occur at the outer membrane of neurons. In case of a event, the raises and falls of potential at the membrane of the neuron is called as action potential. The electrical activity at the neurons enable us to record and decode the brain activities. There are many ways to record the electrical activity and are broadly classified into invasive and non-invasive recording. Some technologies can also be used to stimulate neurons or brain regions, that allows BCIs to send feedback to brain based on interactions with the world. This work is only on Electroencephalography, a  noninvasive approach, hence the topic on invasive approaches and other noninvasive approaches are just briefly touched.
 
     \subsection{Invasive Approaches}
-Approaches requiring some surgery where an electrode is placed in direct contact with required region in the brain are invasive methods of recording 
-brain signals. These approaches are typically performed on animals such as monkeys, rats. In case of humans these approaches are carried on under strict
-clinical settings. As the recording sensor is in direct contact with the brain tissues, these provide higher quality signals with high SNR, higher spatial 
-resolution and less spatial smearing compared to the noninvasive approaches.
+Approaches requiring some surgery where an electrode is placed in direct contact with required region in the brain are invasive methods of recording brain signals. These approaches are typically performed on animals such as monkeys, rats. In case of humans these approaches are carried on under strict clinical settings. As the recording sensor is in direct contact with the brain tissues, these provide higher quality signals with high SNR, higher spatial resolution and less spatial smearing compared to the noninvasive approaches.
 
     \subsubsection{Electrocorticography (ECoG)}
-    ECoG is an extracortical invasive electrophysiological monitoring method \cite{2021}. Typically performed in a clinical setting, a strip of electrodes
-are placed on the surface of intrest on the brain. It has many advantages compared to other invasive approaches.
+    ECoG is an extracortical invasive electrophysiological monitoring method \cite{2021}. Typically performed in a clinical setting, a strip of electrodes are placed on the surface of intrest on the brain. It has many advantages compared to other invasive approaches.
 
     \subsection{Noninvasive Approaches}
-Approaches that gather brain signals over the surface of the scalp, without any surgery or electrodes being inserted into the skull are termed noninvasive
-approaches. The signals could be collected by measuring the electrical or the magnetic activity on the surface of the scalp. Some of the common noninvasive 
-approaches are Electroencephalography (EEG), functional magnetic resonance imaging (fMRI), functional near-infrared spectroscopy (fNIRS), magnetoencephalography (MEG),
-and electrooculography (EOG).
+Approaches that gather brain signals over the surface of the scalp, without any surgery or electrodes being inserted into the skull are termed noninvasive approaches. The signals could be collected by measuring the electrical or the magnetic activity on the surface of the scalp. Some of the common noninvasive approaches are Electroencephalography (EEG), functional magnetic resonance imaging (fMRI), functional near-infrared spectroscopy (fNIRS), magnetoencephalography (MEG), and electrooculography (EOG).
     
 %     \subsubsection{Functional Near-infrared Spectroscopy (fNIRS)}
 % fNIRS uses near-infrared light to measure the degree of oxygenated and deoxygenated haemoglobin. The relative levels 
 
     \subsubsection{Electroencephalography (EEG)}
-EEG is the most commonly used noninvasive approach used to measure brain electrical activity on the surface of the scalp. The electrodes are usually placed
-according to internationally recognized 10-20 system \cite{}. The spatial resolution of the signals depend on the number of electrodes used. The temporal
-resolution depends on how many samples the system could measure in a second. However the temporal resolution of the EEG signals is much better than the spatial
-resolution. In Comparison to invasive approaches, the EEG systems have poor spatial and temporal resolution, and very poor SNR. Since the measurement is taken
-over the surface of the scalp, the obstruction of the skull and other tisses between cortex and the scalp act as a huge conductive surface leading to spatial
-smearing. In comparison to other noninvasive approaches EEGs have higher temporal resolution, tolerant to noise and artifacts, low cost and no exposure to 
-high intensity magnetic fields.
+EEG is the most commonly used noninvasive approach used to measure brain electrical activity on the surface of the scalp. The electrodes are usually placed according to internationally recognized 10-20 system \cite{}. The spatial resolution of the signals depend on the number of electrodes used. The temporal resolution depends on how many samples the system could measure in a second. However the temporal resolution of the EEG signals is much better than the spatial resolution. In Comparison to invasive approaches, the EEG systems have poor spatial and temporal resolution, and very poor SNR. Since the measurement is taken
+over the surface of the scalp, the obstruction of the skull and other tisses between cortex and the scalp act as a huge conductive surface leading to spatial smearing. In comparison to other noninvasive approaches EEGs have higher temporal resolution, tolerant to noise and artifacts, low cost and no exposure to high intensity magnetic fields.
 
-    Spatial smearing is the effect by which all the electrodes tend to measure the same signal because of the conductive effect of the tissues between the cortex
-and scalp. It also very succeptible to other noises such as power-line, changind electrode impedance, eye movements, eye blinks, facial muscle movements and head
-movement. The brain signals measured from the EEG systems can be seperated into frequency bands, where each frequency band represents to a specific brain state
-and level of awareness. The recorded brain signals contains information on various physiological, psychological, mental, sensory and cognitive activities. Hence
-it is required to analyse and extract the relevant information from the signal.
+    Spatial smearing is the effect by which all the electrodes tend to measure the same signal because of the conductive effect of the tissues between the cortex and scalp. It also very succeptible to other noises such as power-line, changind electrode impedance, eye movements, eye blinks, facial muscle movements and head movement. The brain signals measured from the EEG systems can be seperated into frequency bands, where each frequency band represents to a specific brain state
+and level of awareness. The recorded brain signals contains information on various physiological, psychological, mental, sensory and cognitive activities. Hence it is required to analyse and extract the relevant information from the signal.
 
 \section{EEG Paradigms}
 
 \subsection{Spontaneous EEG}
-Spontaneous EEG also referred as Oscillatory Activity includes a wide range of task typically without any external stimulation such as mental task, motor imagery,sleeping, 
-under fatigue stage. BCI systems that work with spontaneous EEGs are also called Active BCI as they reuire conciously controlled thought independent from external events.
-BCI systems that work with spontaneous EEG are hard to train given their low SNR and variation in subjects.
+Spontaneous EEG also referred as Oscillatory Activity includes a wide range of task typically without any external stimulation such as mental task, motor imagery,sleeping, under fatigue stage. BCI systems that work with spontaneous EEGs are also called Active BCI as they reuire conciously controlled thought independent from external events.BCI systems that work with spontaneous EEG are hard to train given their low SNR and variation in subjects.
 
     \subsubsection{Motor Imagery (MI)}
-Imagining a motor movement without performing an actual movement is termed Motor Imagery. It is one of the widely researched EEG paradigm that is used in several applications
-where the user is limited in their motor movement capabilities. It also helps in mental rehersals as the person experience themselves performing the action. MI is due to
-two basic phenomena that occur in the brain onset of imagination - Event Related Desynchronization (ERD) and Event Related Synchronization (ERS). ERD/ERS refers to 
-phenomena that the magnitude and the frequency distribution of the EEG signal power changes during a specific brain state. It is mostly observed in sensory, cognitive
-and motor tasks. During motor imagery contralateral ERD is observed in the mu band and after motor imagery ERS is observed in beta band.
+Imagining a motor movement without performing an actual movement is termed Motor Imagery. It is one of the widely researched EEG paradigm that is used in several applications where the user is limited in their motor movement capabilities. It also helps in mental rehersals as the person experience themselves performing the action. MI is due to two basic phenomena that occur in the brain onset of imagination - Event Related Desynchronization (ERD) and Event Related Synchronization (ERS). ERD/ERS refers to 
+phenomena that the magnitude and the frequency distribution of the EEG signal power changes during a specific brain state. It is mostly observed in sensory, cognitive and motor tasks. During motor imagery contralateral ERD is observed in the mu band and after motor imagery ERS is observed in beta band.
 
-Event Related Desynchronization (ERD) is due to activity of small set of neurons. A visual stimulation results in a short lasting attenuation or blocking of rhythm in the alpha 
-band leading to power decrease of ongoing EEG signals. This decrease in the oscillatory is related to internally or externally paced events.
+Event Related Desynchronization (ERD) is due to activity of small set of neurons. A visual stimulation results in a short lasting attenuation or blocking of rhythm in the alpha band leading to power decrease of ongoing EEG signals. This decrease in the oscillatory is related to internally or externally paced events.
 
-Event Related Synchronization (ERS) is due to activity of large set of neurons. The increase in oscillatory activity is again related to internally or externally paced events.
-It is characterized by short lasting amplitude enchancement.
+Event Related Synchronization (ERS) is due to activity of large set of neurons. The increase in oscillatory activity is again related to internally or externally paced events.It is characterized by short lasting amplitude enchancement.
 
 \subsection{Evoked Potential (EP)}
-Processing of physcal stimulus rather than higher processes that might involve memory and attention. BCI systems that work with EPs could be also called Reactive BCI as they
-rely on response to the stimulus provided. Few of the commonly researched EPs are described below
+Processing of physcal stimulus rather than higher processes that might involve memory and attention. BCI systems that work with EPs could be also called Reactive BCI as they rely on response to the stimulus provided. Few of the commonly researched EPs are described below.
 
     \subsubsection{Event Related Potential (ERP)}
-It is the most widely researched EPs and it is further classified based on the stimulus used to trigger the brain waves: visual evoked potential when stimulated visually,
-audiotory evoked potential when stimulated with sound and somatosensory evoked potential when evoked with smell. The stimulus could be internal or external based on the BCI 
-system. P300 is an important component in ERP and it is been widely used in many BCI systems exiisting in the marker. It refer to the postive peak that appears 300ms after the 
-onset of stimulus.
+It is the most widely researched EPs and it is further classified based on the stimulus used to trigger the brain waves: visual evoked potential when stimulated visually, audiotory evoked potential when stimulated with sound and somatosensory evoked potential when evoked with smell. The stimulus could be internal or external based on the BCI system. P300 is an important component in ERP and it is been widely used in many BCI systems exiisting in the marker. It refer to the postive peak that appears 300ms after the onset of stimulus.
 
     \subsubsection{Error Related Potential (ErRP)}
-It is a result oof an errorous event. It is generated by the error processing mechanism in the human brain. It provides a feature rich feedback to the BCI system and helps to
-tune the sytem in the desirable way.
+It is a result oof an errorous event. It is generated by the error processing mechanism in the human brain. It provides a feature rich feedback to the BCI system and helps to tune the sytem in the desirable way.
 
 \section{Brain Signal Processing Pipeline}
-The brain signal is fed through several signal processing algorithms to extract the best possible information. These processing algorithms are specifically chosen to  extract
-motor imagery data. The overall processing pipeline is given in the figure \ref{}. THe first few steps in the processing pipeline is the same for both conventional and deep learning
-approaches.  The variation is observed only at feature extraction and classification. These steps involved in the pipeline are explained in detail in the following sections.
+The brain signal is fed through several signal processing algorithms to extract the best possible information. These processing algorithms are specifically chosen to  extract motor imagery data. The overall processing pipeline is given in the figure \ref{}. THe first few steps in the processing pipeline is the same for both conventional and deep learning approaches.  The variation is observed only at feature extraction and classification. These steps involved in the pipeline are explained in detail in the following sections.
 
 \subsection{Data Extraction}
-The input to the pipeline could be an online/offline data from OpenBCI headgear or publicly available open-source datasets. The open-source datasets were used in order to design the
-pipeline and later the pipeline is calibrated to work with data from OpenBCI headgear.
+The input to the pipeline could be an online/offline data from OpenBCI headgear or publicly available open-source datasets. The open-source datasets were used in order to design the pipeline and later the pipeline is calibrated to work with data from OpenBCI headgear.
 
 \subsubsection{OpenBCI headgear}
-Before the experiment could be started several parameters are checked. In order to ensure the contact of electrodes on the users scalp, the impedance at the electrodes are
-monitored and adjusted untill they fall into acceptable threshold i.e. less than $750K\Omega$. Next the frequency filters are configured to avoid DC offset and electric powerline 
-noises. However this filter is applied only to the visualizer and not to the recorded data. The electrodes are very succeptible to noises that appear around 25Hz even after
+Before the experiment could be started several parameters are checked. In order to ensure the contact of electrodes on the users scalp, the impedance at the electrodes are monitored and adjusted untill they fall into acceptable threshold i.e. less than $750K\Omega$. Next the frequency filters are configured to avoid DC offset and electric powerline noises. However this filter is applied only to the visualizer and not to the recorded data. The electrodes are very succeptible to noises that appear around 25Hz even after
 filtering the DC offset and powerline noises. Hence while performing the experiment the user is away from any electronic device.
 
-Establihing a proper experiment is a key step in training the classifiers, By \cite{} each trail is recorded for 12 seconds, the setup used to gather data for a three class 
-system that consists of a window sperated by a vertical line and two squares - yellow and blue,  in the centre initially. The beginning of each trial is marked by change in color of the vertical
-line then the subject is requested to be in a idle state for the first 5 seconds. The motor imagery task to be performed is presented on the screen  for 3 seconds with help of a yellow square
-by moving it to the left,right or standstill denoting only straight motion without steering, here the subject can prepare themselves. After which the subject either performs the 
-instructed movement or imagines performing the movement for 3 seconds. The data collected so far could be wither used to train a model online 
-or it can used as input to a presaved model and obtain the classification result. The result of the classifier is used to
-move the blue square accordingly. The answer presented to the subject stimulates feedback in the user which is again captured in the 
-recording for analyzing ErRP and to improve the classifier results.
+Establihing a proper experiment is a key step in training the classifiers, By \cite{} each trail is recorded for 12 seconds, the setup used to gather data for a three class system that consists of a window sperated by a vertical line and two squares - yellow and blue,  in the centre initially. The beginning of each trial is marked by change in color of the vertical line then the subject is requested to be in a idle state for the first 5 seconds. The motor imagery task to be performed is presented on the screen  for 3 seconds with help of a yellow square by moving it to the left,right or standstill denoting only straight motion without steering, here the subject can prepare themselves. After which the subject either performs the instructed movement or imagines performing the movement for 3 seconds. The data collected so far could be wither used to train a model online or it can used as input to a presaved model and obtain the classification result. The result of the classifier is used to move the blue square accordingly. The answer presented to the subject stimulates feedback in the user which is again captured in the recording for analyzing ErRP and to improve the classifier results.
 
-LSL is used to establish communication between OpenBCI GUI and CARLA BCI Control ROS node. With the support of MNE, a mock LSL stream can be used to stream recorded data
- which helps in debugging the algorithm even in the absence of the OpenBCI headgear.
+LSL is used to establish communication between OpenBCI GUI and CARLA BCI Control ROS node. With the support of MNE, a mock LSL stream can be used to stream recorded data which helps in debugging the algorithm even in the absence of the OpenBCI headgear.
 
 \subsubsection{Open-source Datasets}
-    BCIs are widely researched topic for several decades, however the huge variation in the BCI experiments to obtain relevant information from the brain signal is a bottleneck
-in the publicly available dataset. This work required a multiclass motor-imagery dataset recorded with 16+ channel BCI system and sampling rate of greater than 125Hz. Some of the
-datasets that were used in setting up the signal processing pipeline and used for comparative analysis are discussed further. The dataset thus used were resampled, channel picked
-inorder to develop a signal processing pipeline compatible to the hardware inhand.
+    BCIs are widely researched topic for several decades, however the huge variation in the BCI experiments to obtain relevant information from the brain signal is a bottleneck in the publicly available dataset. This work required a multiclass motor-imagery dataset recorded with 16+ channel BCI system and sampling rate of greater than 125Hz. Some of the datasets that were used in setting up the signal processing pipeline and used for comparative analysis are discussed further. The dataset thus used were resampled, channel picked inorder to develop a signal processing pipeline compatible to the hardware inhand.
 
 \subsubsection{PhysioNet}
-    It consists of over 1500 one- and two-minute EEG recordings from 109 participants performing motor-imagery task using 64-channel BCI2000 system at a sample rate of 160Hz.
-Each participants performed 14 experiments each involving either imagining or actually performing opening and closing fists and feet. The BCI system followed the international
-10-20 system making it easy to construct MNE Raw frame.
+    It consists of over 1500 one- and two-minute EEG recordings from 109 participants performing motor-imagery task using 64-channel BCI2000 system at a sample rate of 160Hz. Each participants performed 14 experiments each involving either imagining or actually performing opening and closing fists and feet. The BCI system followed the international 10-20 system making it easy to construct MNE Raw frame.
 
 \subsubsection{Berlin BCI Competition}
-    This compettion was held for few years where the competitors had to come up with the best performing signal processing pipeline for dataset. This includes a list of various
-EEG datasets, this work uses the motor imagery dataset from BBCI III IVa. The recordings were performed using 118-channel EEG system at a sampling rate of 1000Hz. It consists
-of 5 participants, each performing motor imaginaton of right fist or foot. The electrode locations in the BCI system is arbitrary and the location info was provided with the dataset.
-It required manual asssignment of locations to enable all the functionalities in MNE framework.
-
-From this point the word- dataset and data are used interchangibly and it is used to denote the data obtained from the OpenBCI headgear and the open-source datasets unless specified.
+    This compettion was held for few years where the competitors had to come up with the best performing signal processing pipeline for dataset. This includes a list of various EEG datasets, this work uses the motor imagery dataset from BBCI III IVa. The recordings were performed using 118-channel EEG system at a sampling rate of 1000Hz. It consists of 5 participants, each performing motor imaginaton of right fist or foot. The electrode locations in the BCI system is arbitrary and the location info was provided with the dataset. It required manual asssignment of locations to enable all the functionalities in MNE framework. From this point the word- dataset and data are used interchangibly and it is used to denote the data obtained from the OpenBCI headgear and the open-source datasets unless specified.
 
 \section{Preprocessing}
-The data obtained needs to be processed effectively to get the best possible information and it influences the classification result dramatically. Most of the BCI systems in the
-literature use the following techniques to achieve the best results. 
+The data obtained needs to be processed effectively to get the best possible information and it influences the classification result dramatically. Most of the BCI systems in the literature use the following techniques to achieve the best results. 
 
 \subsection{Artifact removal techniques}
-    Any undesirable signals that originate outside the brain  are termed artifacts. Some of the artifacts are listed in the section. Techniques that are used to remove such
-artifacts from relevant data are effective on one such artifact. Techniques described below are proved to be effective for this work. 
+    Any undesirable signals that originate outside the brain  are termed artifacts. Some of the artifacts are listed in the section. Techniques that are used to remove such artifacts from relevant data are effective on one such artifact. Techniques described below are proved to be effective for this work. 
 
 \subsubsection{Band Pass}
-The information required to perform motor imagery classification is present in the low frequency region i.e 30Hz, hence bandpassing the signal between 5Hz and 40Hz removes the DC 
-offset and irrelavant information. It also avoids the need for a notch filter at 50Hz or 60Hz to remove the electric power line noise. 
+The information required to perform motor imagery classification is present in the low frequency region i.e 30Hz, hence bandpassing the signal between 5Hz and 40Hz removes the DC offset and irrelavant information. It also avoids the need for a notch filter at 50Hz or 60Hz to remove the electric power line noise. 
 
 \subsubsection{Spatial Filtering}
-The potential that is measured at an electrode is overlap or a linear combination of several sources in the brain, this is primarily due to volume conduction. Given $\mathcal{x}_i$
-from n independent sources, the sum of all independent sources can be written as \ref{eq:spat_smear}.
+The potential that is measured at an electrode is overlap or a linear combination of several sources in the brain, this is primarily due to volume conduction. Given $\mathcal{x}_i$ from n independent sources, the sum of all independent sources can be written as \ref{eq:spat_smear}.
 
 \begin{equation} \label{eq:spat_smear}
     \mathbb{C}^{j} = \sum_{n = i}^{n} w_{i}^{j} x_{i} = \mathbb{W^{j} X} 
 \end{equation}
 
-where $\mathbb{C}^{j} $ refers to measurement from arbitary channel $j$,  $\mathbb{W^j}$ represents the weight matrix for channel $j$ and $\mathbb{X}$ represents independent sources.
-Inherently brain signals are low in SNR, improving the SNR would enable increased classification accuracy. Spatial filtering achieves this by performing one of the following 
-- enhance local activity, reduce noise across channels, dimensionality reduction, identify hidden sources, find projections that maximize
-discrimination between different classes. The following techniques perform one of the above mentioned operations. Spatial Filters also help to invert measurement to the
+where $\mathbb{C}^{j} $ refers to measurement from arbitary channel $j$,  $\mathbb{W^j}$ represents the weight matrix for channel $j$ and $\mathbb{X}$ represents independent sources. Inherently brain signals are low in SNR, improving the SNR would enable increased classification accuracy. Spatial filtering achieves this by performing one of the following - enhance local activity, reduce noise across channels, dimensionality reduction, identify hidden sources, find projections that maximize discrimination between different classes. The following techniques perform one of the above mentioned operations. Spatial Filters also help to invert measurement to the
 original source.
 
 \subsubsection{Bipolar Referencing}
 Rereferencing the measurement from the electrodes is one of the common methods that help to achieve better SNR.
 
-For a primitive system, Bipolar rereferencing will highlight the required features by finding the potential difference between two electrodes of interests. Consider measurement from 
-channels $i$ and $j$
+For a primitive system, Bipolar rereferencing will highlight the required features by finding the potential difference between two electrodes of interests. Consider measurement from channels $i$ and $j$
 
 \begin{equation} \label{eq:bip_eeg}
     \mathbb{C}^{i}_{Bi} =  \mathbb{C}^{i} - \mathbb{C}^{j}
 \end{equation}
 
 \subsubsection{Laplacian Referencing}
-Laplacian rereferencing enhances local activity at the electrode of interest by subtracting the potential of the channel of interest from the potentials of the adjacent 
-four channels $\theta$. This is achieved by removing the muscle activity from the electrode of interest.
+Laplacian rereferencing enhances local activity at the electrode of interest by subtracting the potential of the channel of interest from the potentials of the adjacent four channels $\theta$. This is achieved by removing the muscle activity from the electrode of interest.
 
 \begin{equation} \label{eq:lap_eeg}
     \mathbb{C}^{i}_{LP} =  \mathbb{C}^{i} - \frac{1}{4} \sum_{i \epsilon \theta} \mathbb{C}^{i}
 \end{equation}
 
 \subsubsection{Common Average Referencing (CAR)}
-It is the most common method of rereferencing, it is very similar to Laplacian rereferencing, but instead of the adjacent electrodes, the average of potentials of all the electrodes
-is subtracted.
+It is the most common method of rereferencing, it is very similar to Laplacian rereferencing, but instead of the adjacent electrodes, the average of potentials of all the electrodes is subtracted.
 
 \begin{equation} \label{eq:car_eeg}
     \mathbb{C}^{i}_{CAR} =  \mathbb{C}^{i} - \frac{1}{N} \sum_{n = 1}^{N} \mathbb{C}^{i}
 \end{equation}
 
 \subsubsection{Independent Component Analysis (ICA)}
-The potentials recorded using EEG electrodes appear the same and it is highly corelated. This measurement is highly redundant as it doesn't provide any distinctive features that could
-enable efficient classficiation. Principal Component Analysis (PCA) enables dimensionality reduction that helps to remove the redundant information by finding the dimensions of highest variance
-, also called as principal components and transforming the measured data to the directions of N desired principal components that contains the most valuable information. With reduced dimensionality
-the classifier can be trained effectively as the principal components serve as feature vectors as they have the necessary information. Though the transformed data is decorrelated, the higher orders 
-of the data are not independent, i.e. the transformed data is not completely independent. For analysis of brain signals, the measured data is assumend to be a linear combination of statistically
-independent signals from different regions in the brain, hence complete independence of the data is essential.
+The potentials recorded using EEG electrodes appear the same and it is highly corelated. This measurement is highly redundant as it doesn't provide any distinctive features that could enable efficient classficiation. Principal Component Analysis (PCA) enables dimensionality reduction that helps to remove the redundant information by finding the dimensions of highest variance , also called as principal components and transforming the measured data to the directions of N desired principal components that contains the most valuable information. With reduced dimensionality the classifier can be trained effectively as the principal components serve as feature vectors as they have the necessary information. Though the transformed data is decorrelated, the higher orders of the data are not independent, i.e. the transformed data is not completely independent. For analysis of brain signals, the measured data is assumend to be a linear combination of statistically independent signals from different regions in the brain, hence complete independence of the data is essential.
 
 Consider $\mathbb{X}$ independent sources, the measurement $\mathbb{C}$ at the channels is mixed up by mixing matrix $\mathbb{M}$ \ref{mixed_ica}.
 
@@ -191,39 +119,29 @@ Consider $\mathbb{X}$ independent sources, the measurement $\mathbb{C}$ at the c
     \mathbb{C} = \mathbb{MX} 
 \end{equation}
 
-ICA helps to recover the independent sources by finding the unmixing matrix  $\mathbb{M^{-1}}$ \ref{unmixed_ica} in case where the n independent sources and 
-N channels are the same.
+ICA helps to recover the independent sources by finding the unmixing matrix  $\mathbb{M^{-1}}$ \ref{unmixed_ica} in case where the n independent sources and N channels are the same.
 
 \begin{equation} \label{eq:unmixed_ica}
     \mathbb{X} = \mathbb{M^{-1}C}
 \end{equation}
 
-However the independent sources $\mathbb{X}$ obtained from ICA can be less than, more than or equal to the number of measured channels and not orthogonal to each other unlike PCA. These independent
-components serve as feature vector for classification or removes the artifacts from the measurement.
+However the independent sources $\mathbb{X}$ obtained from ICA can be less than, more than or equal to the number of measured channels and not orthogonal to each other unlike PCA. These independent components serve as feature vector for classification or removes the artifacts from the measurement.
 
 \subsubsection{Signal Space Projection (SSP)}
-It helps in removing the artifacts in the signal by estimating a projection matrix based on measurements with and without signals of interest. The measurements are first taken without a subject to
-determine the directions of the noise vectors and the matrix formed by the noise vectors is used to project the measurement onto the hyperplane orthogonal to the noise vectors to remove the noise 
-from the measurement data. Noise reduction leads to loss of dimensions however it is relatively less compared to original signal space.  
+It helps in removing the artifacts in the signal by estimating a projection matrix based on measurements with and without signals of interest. The measurements are first taken without a subject to determine the directions of the noise vectors and the matrix formed by the noise vectors is used to project the measurement onto the hyperplane orthogonal to the noise vectors to remove the noise from the measurement data. Noise reduction leads to loss of dimensions however it is relatively less compared to original signal space.  
 
 \section{Epoching}
-After preprocessing the measurement, the data that is stored in the RAW format cannot be used further for feature extraction or classification as it conssits of information
-relating to all the classes, hence the data has to be broken down into segments with a specific time bound before and after the event, grouped together based on the class. This
-process is referred to as epoching. This enables extraction of distinctive features that is most prevalant in all the segments in a particular class. The data after epoching is
-of the shape $Ep \times N \times T$. where  $Ep$ is the nummber of epochs that is equal to the number of events, $N$ channels and $T$ epoched time points which is roughly between
-$-8$ and $4$ with the event trigger at the $0$ mark
+After preprocessing the measurement, the data that is stored in the RAW format cannot be used further for feature extraction or classification as it conssits of information relating to all the classes, hence the data has to be broken down into segments with a specific time bound before and after the event, grouped together based on the class. This process is referred to as epoching. This enables extraction of distinctive features that is most prevalant in all the segments in a particular class. The data after epoching is of the shape $Ep \times N \times T$. where  $Ep$ is the nummber of epochs that is equal to the number of events, $N$ channels and $T$ epoched time points which is roughly between
+$-8$ and $4$ with the event trigger at the $0$ mark.
 
-The frequency spectra of brain signals commonly have the $\frac{1}{f}$ structure, where the low frequency components domainate the results of the analysis. Power 
-normalization resolves this by removing the $\frac{1}{f}$ and it is performed with the help of baselining the segments. Baseline is defined as 
-a time intreval usually before the occurence of the event.
+The frequency spectra of brain signals commonly have the $\frac{1}{f}$ structure, where the low frequency components domainate the results of the analysis. Power normalization resolves this by removing the $\frac{1}{f}$ and it is performed with the help of baselining the segments. Baseline is defined as a time intreval usually before the occurence of the event.
 
 Power normalization is the ratio of activity (TF power) to baseline (TF power for a specific time window) \ref*{bel}.
 \begin{equation} \label{eq:bell}
     10\log_{10}(\frac{activity}{baseline})
 \end{equation}
 
-Apart from power normalization, baselining helps in seperating task from background activity, normally distributes the data and makes it easier to compare the values across 
-individuals and frequencies.
+Apart from power normalization, baselining helps in seperating task from background activity, normally distributes the data and makes it easier to compare the values across individuals and frequencies.
 
 \section*{Summary}
 From here the clean data is fed to conventional approaches and deep learning approaches seperately.
