@@ -58,7 +58,6 @@ from models.MI_CNN_WT_2019 import TFnet
 from models.EEGNet_2018 import EEGnet
 from utils.train_net import train_and_validate
 
-# %%
 class BrainSignalAnalysis():
     def __init__(self, raw, data_cfg = OCIParams(), analy_cfg = globalTrial(), net_cfg = EEGNetParams()) -> None:
         self.dCfg = data_cfg
@@ -305,7 +304,6 @@ class BrainSignalAnalysis():
                     powerdB[ep,f,:] = 10*np.log10(activity/baseline)
                     powerEp[ep,f,:] = activity
 
-            powerdB = self.normalize(powerdB.copy())
             self.features = powerdB
             # features = features.reshape(features.shape[0],-1)           
             # print(self.features.shape)
@@ -408,6 +406,9 @@ class BrainSignalAnalysis():
             self.features = features.reshape(sh[0]*sh[1], sh[2], sh[3], sh[4])# ep x (n_segxstep) x n_row x n_col
             self.labels = self.labels.repeat(sh[1])
 
+        if method.find('norm')!=-1:
+            self.features = self.normalize(self.features.copy())
+
         # Test train split
         if self.features.shape[0] > 3:
             self.train_x, self.test_x,self.train_y,self.test_y = train_test_split(self.features, self.labels, 
@@ -489,14 +490,12 @@ class BrainSignalAnalysis():
                            
 
 if __name__ =='__main__':
-    '''
     runs = [3, 4, 7, 8, 11, 12]
     person_id = 1
-    raw = extractBCI3(runs , person_id)
+    # raw = extractBCI3(runs , person_id)
     raw = extractPhysionet(runs, person_id)
-    '''
-    data_cfg = OCIParams()
-    raw = extractOCI([], 1)
+    data_cfg = PhysionetParams()
+    # raw = extractOCI([], 1, Expr_name = 'P2_Day5_125')
     analy_cfg = globalTrial()
     net_cfg = EEGNetParams()
     artifact_removal_methods =  'locl_ssp_car_ica'
@@ -504,7 +503,7 @@ if __name__ =='__main__':
     classi_methods = feat_extract_methods+'_CNN'
     
     methods = 'locl_IMG_EEGnet_CNN'
-    methods = f'locl_ssp_car_ica_RAW_{0}_{0}'
+    methods = f'locl_car_RAW_{0}_{0}'
 
     start = time()
     bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg)

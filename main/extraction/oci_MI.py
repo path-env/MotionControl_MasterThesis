@@ -51,7 +51,7 @@ def extractOCI(runs= [], person_id = [], Expr_name = 'P2_Day*_125'):
     return raw
 
 if __name__ == "__main__":
-    extractOCI(1,1, Expr_name = 'P2_Day*_125') #['Raw_P2_Day1_80.npz','Raw_P2_Day2_80.npz'])
+    extractOCI(1,1, Expr_name = 'P2_Day*_80') #['Raw_P2_Day1_80.npz','Raw_P2_Day2_80.npz'])
     '''
     # raw.plot_sensors(show_names = True);
 
