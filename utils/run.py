@@ -60,8 +60,8 @@ def run(filename = 'dummy.npz'):
     for fold, (data.train_idx, data.val_idx) in enumerate(crsval.split(train_x)):
         print(f'   ############### Fold - {fold} ######################')
         n_s,cCh,n_chan,n_T = datacont.x.shape
-        F1, D = 15,4
-        F2 = F1*D
+        F1, D = 12,4
+        F2 = 50
         # model = CasCnnRnnnet(n_classes, n_seg = cCh, n_row_img = n_chan, n_row_col= n_T, n_layers = 3, dt = 0.55)
         # model = ATTNnet(n_classes, cCh*n_T, cCh, n_layers = 3, dt = 0.55)
         model =  EEGnet(n_classes = n_classes, n_chan = n_chan, n_T = n_T,
@@ -79,7 +79,7 @@ def run(filename = 'dummy.npz'):
 
         optimizer = optim.Adam(model.parameters(), lr=0.001)
         # lambda1 = lambda epoch: 0.1 ** epoch
-        LRscheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.7)
+        LRscheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=70, gamma=0.7)
 
         acc_train, acc_val, f1_train, f1_val = train_and_validate(data,model,loss,optimizer, LRscheduler,
                                                                     tb , dCfg, nCfg,epochs = 300)
