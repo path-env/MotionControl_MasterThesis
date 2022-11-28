@@ -129,18 +129,21 @@ class BrainSignalAnalysis():
             # cv2.waitKey(0)
             return None
 
-    def normalize(self, x):
+    def normalize(self, x, max = 1, min =0):
         # Normalizing
         for ep in range(x.shape[0]):
             for ch in range(x.shape[1]):
                 x[ep,ch,:] = (x[ep,ch,:] - x[ep,ch,:].min()) / (x[ep,ch,:].max() - x[ep,ch,:].min())
-            # try:
-            #     train_x[j,:]-= np.mean(train_x[j,:])
-            #     train_x[j,:] = (train_x[j,:]/np.std(train_x[j,:]) )/3
-            # except Exception as e:
-            #     train_x[j,:] =0
+                x[ep,ch,:] = x[ep,ch,:] * (max - min) + min
         return x
     
+    def standardize(self, x):
+        for ep in range(x.shape[0]):
+            for ch in range(x.shape[1]):
+                x[ep,ch,:]-= np.mean(x[ep,ch,:])
+                x[ep,ch,:] = (x[ep,ch,:]/np.std(x[ep,ch,:]) )/3
+        return x
+
     # %%
     # Remove the artifacts
     def artifact_removal(self, method, save_epochs = False):
@@ -405,9 +408,12 @@ class BrainSignalAnalysis():
             sh = features.shape
             self.features = features.reshape(sh[0]*sh[1], sh[2], sh[3], sh[4])# ep x (n_segxstep) x n_row x n_col
             self.labels = self.labels.repeat(sh[1])
+        
+        if method.find('std')!=-1:
+            self.features = self.standardize(self.features.copy())
 
         if method.find('norm')!=-1:
-            self.features = self.normalize(self.features.copy())
+            self.features = self.normalize(self.features.copy(), max =1, min=0)
 
         # Test train split
         if self.features.shape[0] > 3:
@@ -493,9 +499,9 @@ if __name__ =='__main__':
     runs = [3, 4, 7, 8, 11, 12]
     person_id = 1
     # raw = extractBCI3(runs , person_id)
-    raw = extractPhysionet(runs, person_id)
-    data_cfg = PhysionetParams()
-    # raw = extractOCI([], 1, Expr_name = 'P2_Day5_125')
+    # raw = extractPhysionet(runs, person_id)
+    data_cfg = OCIParams()
+    raw = extractOCI([], 1, Expr_name = 'P2_Day*_125')
     analy_cfg = globalTrial()
     net_cfg = EEGNetParams()
     artifact_removal_methods =  'locl_ssp_car_ica'
@@ -503,7 +509,7 @@ if __name__ =='__main__':
     classi_methods = feat_extract_methods+'_CNN'
     
     methods = 'locl_IMG_EEGnet_CNN'
-    methods = f'locl_car_RAW_{0}_{0}'
+    methods = f'locl_car_RAWnorm_{0}_{0}'
 
     start = time()
     bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg)
