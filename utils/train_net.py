@@ -29,7 +29,8 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
     start = time.time()
     # tb_comment = f'batch_size={nCfg.train_bs}, lr={nCfg.lr}'
     # tb = SummaryWriter(tb_info[0], filename_suffix= tb_info[1])
-    history = []
+    history = {'f1_train': [], 'acc_train':[], 'prec_train':[], 'recl_train':[], 'train_loss':[],
+        'f1_val': [], 'acc_val':[], 'prec_val':[], 'recl_val':[], 'val_loss':[]}
     lr = []
     best_acc = 0.0
     print('###############Train and Validate######################')
@@ -131,6 +132,13 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
         # tb.add_scalar('ROC_train', roc, epoch)
         tb.add_scalar('train_loss', avg_train_loss, epoch)
         tb.add_scalar('lr', np.array(lr), epoch)
+
+        history['f1_train'].append(f1_train)
+        history['acc_train'].append(acc_train)
+        history['prec_train'].append(prec_train)
+        history['recl_train'].append(recl_train)
+        history['train_loss'].append(train_loss)
+
         prec_val, recl_val, f1_val, _ = metrics.precision_recall_fscore_support(overall_label_val, 
                         overall_predic_val, zero_division=1, average='weighted', labels=label)
         acc_val  = metrics.accuracy_score(overall_label_val, overall_predic_val)
@@ -157,9 +165,13 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
         #     tb.add_histogram(f'{name}.grad', weight.grad, epoch)
 
         # history.append([avg_train_loss, avg_valid_loss, avg_train_acc, avg_valid_acc])
-                
+        history['f1_val'].append(f1_val)
+        history['acc_val'].append(acc_val)
+        history['prec_val'].append(prec_val)
+        history['recl_val'].append(recl_val)
+        history['val_loss'].append(valid_loss)
+
         epoch_end = time.time()
-        
         print(f"Epoch : {epoch+1}|{epochs}, Training: Loss: {avg_train_loss:.3f}, Accuracy: {acc_train*100:.3f}%, \n\r\t\tValidation: Loss : {avg_valid_loss:.3f}, Accuracy: {acc_val*100:.3f}%, Time: {epoch_end-epoch_start:.4f}",end='\r')
         print(' ')
         if opt_trial != False:
@@ -179,8 +191,9 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
     tb.add_graph(model, inputs)
     # Save if the model has best accuracy till now
     #torch.save(model, dataset+'_model_'+str(epoch)+'.pt')
-    tb.close()       
+    tb.close()    
     return acc_train, acc_val, f1_train, f1_val
+    # return np.mean(history['acc_train']), np.mean(history['acc_val']), np.mean(history['f1_train']), np.mean(history['f1_val']) 
 
 def test_net(model, test_loader, tb, dCfg):
     print('###############Testing######################')

@@ -43,13 +43,15 @@ best_f1 = 0.0
 def objective(trial):
     global best_f1
     param = {
-              'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-1, log = True),
-              'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD","Adamax", "Adadelta",
-                                                                    "ASGD", "RAdam"]),
-              'F1': trial.suggest_int("F1", 1,10, step =1),
-              'F2': trial.suggest_int("F2", 1,10, step =1),
-              'D': trial.suggest_int("D", 1,7, step =1),
+              'learning_rate': trial.suggest_float('learning_rate', 1e-4, 1e-3, log = False),
+            #   'optimizer': trial.suggest_categorical("optimizer", ["Adam", "SGD","Adamax", "Adadelta",
+            #                                                         "ASGD", "RAdam"]),
+              'F1': trial.suggest_int("F1", 1,30, step =1),
+              'F2': trial.suggest_int("F2", 1,30, step =1),
+              'D': trial.suggest_int("D", 3,7, step =1),
               'dt': trial.suggest_float("dt", 0.3, 0.7),
+              'step': trial.suggest_int("step", 20,100, step =10),
+              'decay': trial.suggest_float("decay", 0.1,0.9, log = False)
               }    
     lr = param['learning_rate']
     # Generate the model.
@@ -61,7 +63,7 @@ def objective(trial):
     optimizer = optim.Adam(model.parameters(), lr = lr)
     # optimizer = getattr(optim, param['optimizer'])(model.parameters(), lr= lr)
     # optimizer = optim.Adam(model.parameters(), lr= lr)
-    LRscheduler = lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.1)
+    LRscheduler = lr_scheduler.StepLR(optimizer, step_size=param['step'], gamma=param['decay'])
     if n_classes == 2:
         loss = torch.nn.BCEWithLogitsLoss() # No sigmoid required at the last layer & in train loop, Binary classification
     else:
@@ -73,7 +75,7 @@ def objective(trial):
     data.train_idx, data.val_idx = s[int(n_s*dCfg.test_split):], s[:int(n_s*dCfg.test_split)]
 
     tb_comment = f'bs:{nCfg.train_bs}|lr:{lr}|optim: {optimizer}|'
-    tb_info = (f'logs/{model._get_name()}/{dCfg.name}/optuna/{param["optimizer"]}', f'{lr}')
+    tb_info = (f'logs/{model._get_name()}/{dCfg.name}/optuna/Adam', f'{lr}')
     tb = SummaryWriter(tb_info[0])#, filename_suffix= tb_comment)
     acc_train, acc_val, f1_train, f1_val = train_and_validate(data, model, loss, optimizer,LRscheduler,
                                                          tb, dCfg, nCfg, epochs=EPOCHS, opt_trial=trial)

@@ -20,8 +20,8 @@ import brainflow as bf
 import matplotlib.pyplot as plt
 
 def run(filename = 'dummy.npz'):
-    # dCfg = OCIParams()
-    dCfg = PhysionetParams()
+    dCfg = OCIParams()
+    # dCfg = PhysionetParams()
     nCfg = EEGNetParams()
 
     # filename = 'Physionet_16locl_ssp_car_ica_RAW_[3, 4, 7, 8, 11, 12]_1.npz' # ep x cCH x EEGch x Ts
@@ -69,7 +69,7 @@ def run(filename = 'dummy.npz'):
 
         tb_comment = f'batch_size={nCfg.train_bs}, lr={nCfg.lr}'
         tb_info = (f'logs/{model._get_name()}/{dCfg.name}/{filename}', tb_comment)
-
+ 
         tb = SummaryWriter(tb_info[0], filename_suffix= tb_info[1])
 
         if n_classes == 2:
@@ -77,9 +77,9 @@ def run(filename = 'dummy.npz'):
         else:
             loss = torch.nn.CrossEntropyLoss() # No softmax required at the last layer, Multiclass classification
 
-        optimizer = optim.Adam(model.parameters(), lr=0.001)
+        optimizer = optim.Adam(model.parameters(), lr=0.00153835)
         # lambda1 = lambda epoch: 0.1 ** epoch
-        LRscheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=70, gamma=0.7)
+        LRscheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
 
         acc_train, acc_val, f1_train, f1_val = train_and_validate(data,model,loss,optimizer, LRscheduler,
                                                                     tb , dCfg, nCfg,epochs = 300)
@@ -95,10 +95,10 @@ def run(filename = 'dummy.npz'):
         traincrossvalacc.append(acc_train), valcrossvalacc.append(acc_val)
         traincrossvalf1.append(f1_train), valcrossvalf1.append(f1_val)
         # profiler(model, optimizer, loss, data, LRscheduler, tb_info[0])
-        if f1_val > best_model:
+        if f1_val > 0:
             best_model = f1_val
             print('Saving the model.....')
-            torch.save(model,f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'2.pt'}")
+            torch.save(model,f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_carla.pt'}")
             # model_scripted = torch.jit.script(model) # Export to TorchScript
             # torch.save(model,'/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/trial.pt' )
             # model_scripted.save(f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()}_md_script.pt") 
@@ -120,5 +120,5 @@ def run(filename = 'dummy.npz'):
     print(f"Tests: {np.mean(testcrossval)}")
 
 if __name__ =='__main__':
-    # run('OCIParams_locl_car_RAW.npz')
-    run('Physionet_locl_car_RAW.npz')
+    run('OCIParams_locl_car_RAWnorm.npz')
+    # run('Physionet_locl_car_RAW.npz')
