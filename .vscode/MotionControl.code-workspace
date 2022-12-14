@@ -26,6 +26,8 @@
 		"latex-workshop.latex.bibDirs": [
 			"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/docs/bib"
 		],
+		"latex-workshop.hover.citation.enabled" :true,
+		"latex-workshop.hover.ref.enabled":true,
 		"ros.distro": "noetic"
 	},
 	"launch": {

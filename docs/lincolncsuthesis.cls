@@ -114,8 +114,8 @@
 \RequirePackage{fancyhdr}
 \RequirePackage{lmodern}
 \RequirePackage[backend=biber,
-style=apa,
-citestyle=authoryear
+style=ieee,
+citestyle=numeric
 ]{biblatex}
 
 
@@ -142,8 +142,8 @@ citestyle=authoryear
 }
 
 % Define variables relevant to this thesis
-\lxdef \@logo           {FHD_logo}
-\newcommand{\thesisLogoPath}[1]{\xdef\@logo{#1}}
+%\lxdef \@logo           {FHD_logo}
+%\newcommand{\thesisLogoPath}[1]{\xdef\@logo{#1}}
 \lxdef \@degree         {M.Eng}
 \newcommand{\thesisDegree}[1]{\xdef\@degree{#1}}
 \lxdef \@programme      {Embedded systems for Mechatronics}
@@ -371,7 +371,7 @@ citestyle=authoryear
     
     % Some space, then the author, then the school and university
     % name
-    \vspace{1.5cm}
+    \vspace{6cm}
     {\large \@author \@ifundefined{@studentnumber}{}{\\ \@studentnumber} \par}\vspace{0.45cm}
     {\footnotesize \@schoolname \\ \vspace{0.25cm} \@collegename \\  \vspace{0.25cm}  \@universityname \par}
     
@@ -447,17 +447,17 @@ citestyle=authoryear
 \RenewDocumentCommand{\maketitle}{o}{%
 
   % Call function for before title page
-  \beforeTitlePage
+  \beforeTitlePage 
   
   % Then check which title page style to use
-  \IfNoValueTF{#1}
-    {\@defaultTitlePage}
-    {\ifthenelse{\equal{#1}{logo-first}}
-        {\@altTitlePage}
-        {\@defaultTitlePage}}
+  %\IfNoValueTF{#1}
+   % {\@defaultTitlePage}
+   % {\ifthenelse{\equal{#1}{logo-first}}
+        %{\@altTitlePage}
+        {\@defaultTitlePage}%}
     
   % Call function for after title page       
-  \afterTitlePage
+  \afterTitlePage 
 }
 
 

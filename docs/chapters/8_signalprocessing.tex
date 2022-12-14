@@ -1,23 +1,29 @@
 \section*{Introduction}
-The data after preprocessing is clean from noise and other artifcats, now the most informative and distinguishing features are extracted for classification. This chapter discusses about the conventional signal processing pipeline that is widely researched in the BCI community. These methods are proven to be robust and several existingBCI systems are implented with these algorithms.
+The data after preprocessing is clean from noise and other artifacts, now the most informative and distinguishing features are extracted for classification. This chapter discusses about the conventional signal processing pipeline that is widely researched in the BCI community. These methods are proven to be robust and applied to many existing BCI systems.
 
-\section{Feature Extraction}
-Brain signals are transient as well as diffuse spike and action potential. It is rhythemic and hence could be sinusoidal or non-sinusoidal and includes small oscillaions of semi periodic activations. Therefore the local information exists in time or frequency domain or both. \par
+Researches such as \cite{2019_BMI_MIEEG} reviews various SOTA \nomenclature{SOTA}{State-of-the-art} signal processing pipelines for MI EEG based BCI systems. It discusses about different feature extraction, selection and classification techniques, and further about the benefits and challenges using them. 
 
-The brain signals could be time-locked i.e. the activity in the brain is time synchronized with the stimulus or the temporal dynamics is the same across every trials at the same instance. It could be phase-locked as well i.e. the phase angle time series is the same or similar on every trial. Depending on the type of the experiment used to gather data and the EEG paradigm, these paramters influence the choice of feature extraction mechanism. 
+\cite{2019_BMI_CARLA} studies integrating vehicle control systems (VCS) with 96-channels intra-cortical BCI and validated the concept with CARLA. The BCI signals were decoded and translated into acceleration, deceleration, turn right and turn left using a Python API. To demonstrate the potential of BCI for motion control of a car, 1:10 scale remote controlled car was driven with the same commands offline and prove it to work. Several performance statistics were considered in evaluating the proposed methodologies.
+
+\cite{2019_BCI_ROS} studies the integration of BCI systems with ROS-based control algorithms for navigation and obstacle avoidance to ease cognitive workload. The proposed algorithm is applied to a semi-autonomous navigation system where the BCI system decodes EEG commands to take a left or right turn and the direction information is used by ROS navigation stack to localize and move the robot with information also from different sensors and the provided static map.
+
+\section{Feature Extraction} \label{feat_ext}
+Brain signals are transient as well as diffuse spike and action potential. It is rhythmic, hence could be sinusoidal or non-sinusoidal and includes small oscillations of semi periodic activation. Therefore the local information exists in time or frequency domain or both. \par
+
+The brain signals could be time-locked i.e. the activity in the brain is time synchronized with the stimulus or the temporal dynamics is the same across every trials at the same instance. It could be phase-locked as well i.e. the phase angle time series is the same or similar on every trial. Depending on the type of the experiment used to gather data and the EEG paradigm, these parameters influence the choice of feature extraction mechanism. 
 
 \subsection{Time Domain Analysis}
 Time domain analysis is useful in extracting temporal features in the preprocessed measurement. Some of the commonly used time domain analysis methods include signal averaging, Hjorth parameters, fractal dimensions, auto regressive models, Bayesian filtering, Kalman filtering, particle filtering, zero crossing, template matching, power and window detection.\par
 
-Time domain analysis leads to loss of information on averaging several trials in case of non-phase locked brain signals, but frequency analysis doesn't lose information on averaging trials.
+In case of non-phase locked brain signals, Time domain analysis leads to loss of information on averaging several trials but frequency analysis doesn't lose information on averaging trials.
 
 \subsection{Frequency Domain Analysis}
-Transforming the preprocessed data into frequency domain provides more useful information about the phase and amplitude of the brain signal required for analysis. Imagined movements leads to oscillations in premotor and sensorimotor areas which is observed as amplitude changes in the $\mu$, $\beta$ and $\gamma$ region. These features can be used to create feature vectors. Some of the common frequency domain analysis are fourier transform, short-time fourier transform and welch transform. These methods provide information on the spectral contents of the signal but not the temporal information of the event. 
+Transforming the preprocessed data into frequency domain provides more useful information about the phase and amplitude of the brain signal required for analysis. Imagined movements leads to oscillations in premotor and sensorimotor areas which is observed as amplitude changes in the $\mu$, $\beta$ and $\gamma$ region. These features can be used to create feature vectors. Some of the common frequency domain analysis are Fourier transform, Short-Time Fourier transform and Welsh transform. These methods provide information on the spectral contents of the signal but not the temporal information of the event. 
 
 \subsubsection{Fourier Transform (FT)}
-Fourier transform decomposes signal into a weighted sum of sine and cosine waves of different frequencies. It works on the assumptions that the signal is infinite, periodic and stationary. Brain signals do not hold to these assumptions. These shortcomings can be over come by using short window periods for analysis, termed as Short Time Frequency Transform (STFT). Another commonly used method for frequency domain analysis is welch transform that provides smooth spectral decomposition. \par
+Fourier transform decomposes signal into a weighted sum of sine and cosine waves of different frequencies. It works on the assumptions that the signal is infinite, periodic and stationary. Brain signals do not hold to these assumptions. These shortcomings can be over come by using short window periods for analysis, termed as Short-Time Frequency Transform (STFT) \nomenclature{STFT}{Short-Time Frequency Transform}. Another commonly used method for frequency domain analysis is Welsh transform that provides smooth spectral decomposition. Phase content is not used in brain signal analysis in most cases as the signal could be non-phase locked. Hence amplitude information is mostly used in feature extraction. 
 
-Phase content is not used in brain signal analysis in most cases as the signal could be non-phase locked. Hence amplitude information is mostly used in feature extraction. Power spectrum \ref{eq:pwr} obtained by square of amplitude in different frequency components during course of the task is the feature of interest in most BCI experiments.
+Power spectrum \refeq{eq:pwr} obtained by square of amplitude in different frequency components during course of the task is the feature of interest in most BCI experiments.
 
 \begin{equation} \label{eq:pwr}
     P(n) = A(n)^2
@@ -25,22 +31,23 @@ Phase content is not used in brain signal analysis in most cases as the signal c
 where $A$ is the amplitude spectrum, $P$ is the Power Spectrum and $n$ denotes the index of the content.
 
 \subsection{Time-Frequency Analysis (TFA)}
-The method discussed above do not provide temporal information on occurence of the event. Time-Frequency analysis on the signal provides temporal-spectral information. One of the most commonly used TFA method is wavelet transform
+The method discussed above do not provide temporal information on occurrence of the event. Time-Frequency analysis on the signal provides temporal-spectral information. One of the most commonly used TFA method is wavelet transform.
 
 \subsubsection{Wavelet Transform (WT)}
 Wavelet transform uses finite basis functions called wavelets that are scaled and translated copies of finite length waveform called mother wavelet. Wavelets divide the signals of interest into different frequency components, each component can be studied at a resolution matched for its scale. A large scale component produces coarse resolution and small scale component produces fine resolution. The wavelet transform provides lower frequency resolution and higher temporal resolution at higher frequencies whereas higher frequency resolution and lower temporal resolution at lower frequencies. \par
 
-Wavelet analysis is performed by convolution of wavelets of different scale and resolution with the signal of interest. The result of convolution contains components of the signal that are in the same frequency of the wavelet used. Scalogram provides graphical way to interpret the time and frequency information of the signal. The transform could be either discrete or continuous depending upon the scale and translation parameters. Contininous Wavelet Transform (CWT) provides more resolution than the Discrete Wavelet Transform (DWT).
+Wavelet analysis is performed by convolution of wavelets of different scale and resolution with the signal of interest. The result of convolution contains components of the signal that are in the same frequency of the wavelet used. Scalogram provides graphical way to interpret the time and frequency information of the signal. The transform could be either discrete or continuous depending upon the scale and translation parameters. Continuous Wavelet Transform (CWT) \nomenclature{CWT}{Continuous Wavelet Transform}provides more resolution than the Discrete Wavelet Transform (DWT)\nomenclature{DWT}{Discrete Wavelet Transform}.
 
 A generic equation for a wavelet $\psi$ used in CWT can be written as \ref{eq:cwt}.
+
 \begin{equation} \label{eq:cwt}
     \psi_{a,b}(t) = \frac{1}{\sqrt{a}} \psi( \frac{t - b}{a}) 
 \end{equation}
 where $t$ denotes time, $b$ is the shift parameter that slides the waveform along the time axis and $a$ is the scale factor that is used to scale the frequency of the wavelet.
 
-Generally for a given wavelet function $\psi(\frac{t}{a})$ when $a > 1$ the mother wavelet dilates and it helps in capturing low frequency component and when $0 < a < 1$ it compresses the mother wavelet, capturing the high frequency componenets in the signal of interest. Thus $a \propto \frac{1}{f}$.
+Generally for a given wavelet function $\psi(\frac{t}{a})$ when $a > 1$ the mother wavelet dilates and it helps in capturing low frequency component and when $0 < a < 1$ it compresses the mother wavelet, capturing the high frequency components in the signal of interest. Thus $a \propto \frac{1}{f}$.
 
-Wavelets have bandpass characteristics, with sum of all points being zero \ref{eq:wt_sum0} and its equivaent frequency can be determined by \ref{eq:wt_cf}.
+Wavelets have band-pass characteristics, with sum of all points being zero \ref{eq:wt_sum0} and its equivalent frequency can be determined by \ref{eq:wt_cf}.
 
 \begin{equation} \label{eq:wt_sum0}
     \int\psi(t) = 0
@@ -49,24 +56,25 @@ Wavelets have bandpass characteristics, with sum of all points being zero \ref{e
 \begin{equation} \label{eq:wt_cf}
     F_{eq} = \frac{C_f}{a\delta_t}
 \end{equation}
-where $F_{eq}$ is the equivalent frequency, $C_f$ is the centre frequency, $a$ is the scaling factor and $\delta_t$ is the sampling intreval.
+where $F_{eq}$ is the equivalent frequency, $C_f$ is the centre frequency, $a$ is the scaling factor and $\delta_t$ is the sampling interval.
 
 A generic equation for a wavelet used in DWT can be written as \ref{eq:dwt}.
+
 \begin{equation} \label{eq:dwt}
     \psi_{a,b}(t) = \frac{1}{2^{\frac{j}{v}}} \psi( \frac{n - m}{2^{\frac{j}{v}}}) 
 \end{equation}
-where $j$ is the scaling parameter, $v(>1)$ denotes voices per octave (lograthamic unit of ratio between two frequencies) and $m$ is the translational parameter.
+where $j$ is the scaling parameter, $v(>1)$ denotes voices per octave (logarithmic unit of ratio between two frequencies) and $m$ is the translational parameter.
 
 % Table about wavelet scale
 
-Various types of wavelets are used in research and one of the commonly used wavelet is the Morlet Wavelet. It the product of complex valued sine wave and gaussian. In frequency domain, The amplitude spectrum of the complex morlet wavelet is not symmetrical and the power spectrum is independent of the phase relation between the wavelet and signal. The Complex Morlet Wavelet can be written as \ref{eq:Mrlt1}.
+Various types of wavelets are used in research and one of the commonly used wavelet is the Morlet Wavelet. It the product of complex valued sine wave and Gaussian. In frequency domain, The amplitude spectrum of the complex morlet wavelet is not symmetrical and the power spectrum is independent of the phase relation between the wavelet and signal. The complex morlet wavelet can be written as \ref{eq:Mrlt1}.
 
 \begin{equation} \label{eq:Mrlt1}
     \psi_\lambda(t) = e^{i2\pi ft -0.5(\frac{t}{\sigma})^2}
 \end{equation}
 where $\sigma = \frac{n}{2\pi f}$, $n$ is the number of cycles, $\lambda$ denotes a wavelet with specific scale and resolution parameters, $f$ is the frequency of the complex sine wave used.
 
-The equation \ref*{eq:Mrlt} can also be written as  \ref*{eq:Mrlt2}
+The equation \refeq{eq:Mrlt1} can also be written as  \refeq{eq:Mrlt2}
 
 \begin{equation} \label{eq:Mrlt2}
     \psi_\lambda(t) = e^{i2\pi ft} e^{-4\ln(2)\frac{t^2}{h^2}}
@@ -78,16 +86,18 @@ A wavelet transform can be written as \ref{eq:WT_wx}.
     \mathcal{W}x  = \int x \ast \psi_\lambda(t) dt
 \end{equation}
 
-where $h$ is the full width half maximum (FWHM) parameter. With higher $n$, better temporal resolution and with lower $n$ better spectral resolution is achieved. Most algorithms work by starting with low number of cycles and gradually increasing to higher number of cycles. However the results of the wavelet convolution are easily interpretable only for stationary signals within the FWHM of the wavelet. With the right design of the wavelet this can be achieved.
+where $h$ is the full width half maximum (FWHM) \nomenclature{FWHM}{full width half maximum}parameter. With higher $n$, better temporal resolution and with lower $n$ better spectral resolution is achieved. Most algorithms work by starting with low number of cycles and gradually increasing to higher number of cycles. However the results of the wavelet convolution are easily interpretable only for stationary signals within the FWHM of the wavelet. With the right design of the wavelet this can be achieved.
 
-\subsection{Wavelet Scaterring Transform (WST)}
+\subsection{Wavelet Scattering Transform (WST)}
 The wavelets are translated and convoluted with the signal of interest, as the wavelets commutes with translations the resulting expression becomes translation covariant. i.e. Shifting the signal also shifts wavelet coefficients, therefore the comparison between translated signals become difficult. In order to make proper representation of the signal the transform has to be translation invariant, stable under deformation and offer good structural information of all frequencies.
 
-By Wavelet Scaterring Transform (WST) non-informative variability in the signal such as translation, rotation and scaling are discarded. It can be suited for any application, with more data a pre-trained model is used as a pipeline and for small datasets wavelet scattering initalization could be performed. WST yields representations that are translation invariant and stable against time warping deformations. This is achieved by subsequent non-linearity and averaging steps after convolving with the wavelet. 
+By WST\nomenclature{WST}{Wavelet Scattering Transform} non-informative variability in the signal such as translation, rotation and scaling are discarded. It can be suited for any application, with more data a pre-trained model is used as a pipeline and for small datasets wavelet scattering initialization could be performed. WST yields representations that are translation invariant and stable against time warping deformations. This is achieved by subsequent non-linearity and averaging steps after convolving with the wavelet. 
+
+As EEG signals can be influenced and varied by various factors Electrocardiography(ECG) provides more stable signals that can be used for analysis. In \cite{2021_ECG_WST_ML}, the author performs emotion recognition from ECG signals using WST for feature extraction and evaluated the system for several classifiers.
 
 CWT is the basic building block for WST. CWT measures similarity of the signal with wavelets of varying frequency and scale at each point in time. For a given wavelet $\psi$, it is first shifted by time $\tau$, the similarity if found by computing the inner product $\left\langle x, \psi \right\rangle$. This is repeated for all $\tau$ and $\psi$.
 
-Any linear operation which is translation invariant of a wavelet coefficient will result in zero, which is not informative. Hence a non-linear invariant operand is required. Modulus being a non-linear, optimal contractive operator, when applied on CWT as given in \ref{eq:wst_TI}, removes the phase information in the signal and makes it invariant to translations,  that gives a measure on sparsity of the wavelet coefficients. The coefficients obtained are called as unaveraged coefficients. 
+Any linear operation which is translation invariant of a wavelet coefficient will result in zero, which is not informative. Hence a non-linear invariant operand is required. Modulus being a non-linear, optimal contractive operator, when applied on CWT as given in \ref{eq:wst_TI}, removes the phase information in the signal and makes it invariant to translations, that gives a measure on sparsity of the wavelet coefficients. The coefficients obtained are called as unaveraged coefficients. 
 
 \begin{equation} \label{eq:wst_TI}
     \begin{split}
@@ -97,7 +107,7 @@ Any linear operation which is translation invariant of a wavelet coefficient wil
 \end{equation}
 where $\lambda_1 = 2^j$ is the centre frequency of the first order wavelets, with $j$ scale factor.
 
-The unaveraged coefficients when convolved again with a lowpass or scaling filter(also called father wavelet) $\phi$ as given in \ref{eq:wst_def} performs temporal averaging of the signal. The coefficients obtained are called Scattering coefficients. It imposes stability against time warping deformations. This however removes high frequency information, but can be recovered by performing WST again on the unaveraged coefficients.
+The unaveraged coefficients when convolved again with a low-pass or scaling filter(also called father wavelet) $\phi$ as given in \ref{eq:wst_def} performs temporal averaging of the signal. The coefficients obtained are called Scattering coefficients. It imposes stability against time warping deformations. This however removes high frequency information, but can be recovered by performing WST again on the unaveraged coefficients.
 
 \begin{equation} \label{eq:wst_def}
     \begin{split}
@@ -106,16 +116,14 @@ The unaveraged coefficients when convolved again with a lowpass or scaling filte
     \end{split}
 \end{equation}
 
-The above steps are performed recursively (usually 3 orders) on the results on the unaveraged coefficients and the features are extracted at each level by convolving the results with lowpass filter. Scatter representations consists of {0,1,2} order coefficients which are generated by composing wavelets in different sequences. Multiple wavelets composed together called filter banks capture high frequency components. Filter bank consists of several dilated and rotated wavelets with no orthogonality.
+The above steps are performed recursively (usually 3 orders) on the results on the unaveraged coefficients and the features are extracted at each level by convolving the results with low-pass filter. Scatter representations consists of {0,1,2} order coefficients which are generated by composing wavelets in different sequences. Multiple wavelets composed together called filter banks capture high frequency components. Filter bank consists of several dilated and rotated wavelets with no orthogonality.
 
-Consider family of wavelets ${\psi_{\lambda}}$
-
-The dilated wavelet can be written as \ref{eq:wst_dila}
+Consider family of wavelets ${\psi_{\lambda}}$. The dilated wavelet can be written as \ref{eq:wst_dila}
 
 \begin{equation} \label{eq:wst_dila}
     \psi_{\lambda}(t) = 2^{\frac{-j}{Q}}\psi(2^{\frac{-j}{Q}}t)
 \end{equation}
-where $Q$ is number of bandpass filter in an octave.
+where $Q$ is number of band-pass filter in an octave.
 
 \begin{equation} \label{eq:wst_wt}
     \mathcal{W} x = \{x\ast \phi(t) , x\ast \psi_\lambda(t) \}
@@ -124,9 +132,9 @@ where $Q$ is number of bandpass filter in an octave.
 The second order coefficients obtained can be decorrelated to increase their invariance through renormalization. Different features are obtained at each order of coefficients. The first order coefficients represents the frequency content (oscillation rate) in the signal, the second order coefficients represents rates of frequency change, treat every rate from first order as its own signal and repeat first order upon each modulus. 
 
  \subsubsection{Exponential decay of scattering coefficients}
- Repeated application of modulo moves the energy contained in the high frequencies of the initial signal towards low frequencies. Convolution with the lowpass filter picks that energy and used in  feature extraction. At each step of the scattering transform, energy in the lowest frequency bands is output by convolution with lowpass filter at its respective step. The remaining part of the energy  is shifted towards the lower frequencies by applying modulus of wavelet transform.
+ Repeated application of modulo moves the energy contained in the high frequencies of the initial signal towards low frequencies. Convolution with the low-pass filter picks that energy and used in  feature extraction. At each step of the scattering transform, energy in the lowest frequency bands is output by convolution with low-pass filter at its respective step. The remaining part of the energy  is shifted towards the lower frequencies by applying modulus of wavelet transform.
  
- \begin{equation} \label{eq:wst_wt}
+ \begin{equation} \label{eq:wst_wt1}
     \mathcal{W} x = \{x\ast \phi(t) , x\ast \psi_\lambda(t) \} \\
 \end{equation}
 
@@ -136,11 +144,11 @@ If $|\hat{\phi}(w)|^2 + \sum_{\lambda} | \hat{\psi}_{\lambda}(w)|^2 = 1$ then $\
     \|\mathcal{W}x\|^2 = \|x\ast\phi\|^2 + \sum_{\lambda}\| x \ast \psi_\lambda\| = \|x\|^2
 \end{equation}
 
- \subsubsection{Neural Network representation of WST}
- Typical Convolution Neural Network (CNN) involves, succesive operations involving convolution, non-linearity, pooling/subsampling. WST performs the same operations, hence WST can be represented as a neural network (WSN) to extract the scattering coefficients. This can be highly efficient as the wavelets values for the filterbank is predetermined hence learning is not required and no complex architecture has to be designed. Kymatio is an Open-source WST implentation that leaverages machine learning framework like PyTorch, Keras or Scikit-learn in the backend.
+\subsubsection{Neural Network representation of WST}
+ Typical Convolutional Neural Network (CNN) \nomenclature{CNN}{Convolutional Neural Network} involves, successive operations involving convolution, non-linearity, pooling/sub-sampling. WST performs the same operations, hence WST can be represented as a neural network called Wavelet Scattering Network (WSN) \nomenclature{WSN}{Wavelet Scattering Network} to extract the scattering coefficients. This can be highly efficient as the wavelets values for the filter bank is predetermined hence learning is not required and no complex architecture has to be designed. Kymatio is an Open-source WST implementation that leverages machine learning framework like PyTorch, Keras or Scikit-learn in the backend.
 
 \subsection{Spatial Analysis}
-The spatial filters invert the measurement to its original source. Spatial Analysis helps in mapping the source signals to the brain topography that can be used for further topographical studies. In general Patterns are not Filters. Patterns denote the propogation of a source to sensors which is used in forward model \ref*{eq:fwd_model}. Filters on the other hand denote weighting of EEG channels and it is used in backwward model \ref*{eq:bck_model} to extract individual components.
+The spatial filters invert the measurement to its original source. Spatial Analysis helps in mapping the source signals to the brain topography that can be used for further topographical studies. In general Patterns are not Filters. Patterns denote the propagation of a source to sensors which is used in forward model \ref*{eq:fwd_model}. Filters on the other hand denote weighting of EEG channels and it is used in backward model \ref*{eq:bck_model} to extract individual components.
 
 \begin{equation} \label{eq:fwd_model}
     x(t) = A s(t) +n(t)
@@ -150,12 +158,14 @@ where $s$ can be a vector denoting sources. $n$ is a noise vector and $x$ is the
 \begin{equation} \label{eq:bck_model}
     \hat{s}(t) = W^T x(t)
 \end{equation}
-where $W$ represnts the unmixing matrix where every row of $W^T$ corresponds to spatial filter.
+where $W$ represents the unmixing matrix where every row of $W^T$ corresponds to spatial filter.
 
 The spatial map of a filter is hard to interpret, but patterns are easy to interpret and hence patterns corresponding to a given spatial filter is found.
 
 \subsubsection{Common Spatial Patterns (CSP)}
-CSP is a supervised feature extraction method for classification algorithms which works only for motor-imagery information in EEG. It learns to optimally discriminate band power features. Variance of the band pass signal is proportional to the band power of the frequency band. CSP leverages this by finding patterns where the  variance of filtered data from one class is maximized while variance of filtered data from other class is minimized. The resulting feature vector enhance discriminability between different classes. However it works on the assumptions that frequency band and time window of the measurements are known, source activity constellation differs between two classes and the band passed signal is jointly gaussian within the time window. 
+CSP \nomenclature{CSP}{Common Spatial Patterns}is a supervised feature extraction method for classification algorithms which works only for motor-imagery information in EEG. It learns to optimally discriminate band power features using multiple electrodes placed at optimal regions. Variance of the band pass signal is proportional to the band power of the frequency band. CSP leverages this by finding patterns where the  variance of filtered data from one class is maximized while variance of filtered data from other class is minimized. The resulting feature vector enhance discriminability between different classes. However it works on the assumptions that frequency band and time window of the measurements are known, source activity constellation differs between two classes and the band passed signal is jointly Gaussian within the time window. 
+
+\cite{2017_EEGChannelSelection} studies different variants of CSP that could achieve maximum accuracy with least number of EEG channels. This helps removing noisy channels and avoid over-fitting. It revealed that a conventional CSP without any regularization applied performs better on cross-subject validation. \cite{2017_MI_ML_SP} proposed motor imagery classification pipeline using channel selection, band passing and  CSP based extraction of 38 features and Gaussian Naive Bayes (GNB) classifier.
 
 Consider measurement data set $\{\mathbb{X}^{i}_{c}\}^{k}_{i=1}$ for trial $i$ belonging to class $c \in\{1,2\}$. Each $\{\mathbb{X}^{i}_{c}\}$ is a $N * T$ matrix, where N is the number of channels and T is the number of samples per channel. The goal of CSP is to find $W$ given by $N * M$, consisting M spatial filters i.e. each column is a  spatial filter, that transforms the measured signals \ref{eq:trans_csp}.
 
@@ -172,7 +182,7 @@ where $x(t)$ is vector of input signals at time $t$ from all channels. CSP can f
 \end{equation}
 where $C_{c}$ is the spatial covariance matrix for class $c$, $W$ is the spatial filter to optimize and $X_{c}$ is the multichannel EEG signal from class $c$. The problem could be solved to either minimize $J(w)$ where variance in $X_{1}$ is minimized and maximized in $X_{2}$ or maximize $J(w)$ where variance in $X_{1}$ is maximized and minimized in $X_{2}$.
 
-This can be computed by Generaized Eigen Value Decomposition (GEVD) of $C_{1}$ and $C_{2}$. The Eigen vectors corresponding to the largest eigen value will maximize $J(w)$. and eigen vectors corresponding to the smallest eigen value will minimize $J(w)$. 
+This can be computed by Generalized Eigen Value Decomposition (GEVD) of $C_{1}$ and $C_{2}$. The Eigen vectors corresponding to the largest eigen value will maximize $J(w)$. and eigen vectors corresponding to the smallest eigen value will minimize $J(w)$. 
 
 \begin{equation} \label{eq:def_csp}
     \begin{split}
@@ -194,17 +204,43 @@ Typically 3 CSP filter pairs i.e. minimization and maximization are used which r
         = sign(\theta log(WCW^T) + b)
     \end{split}
 \end{equation}
-The application of log on the spatially filtered data makes it a gaussian distribution. The classifier applied can be either linear or nonlinear. After applying CSP the data is rotated and placed orthogonal.
+The application of log on the spatially filtered data makes it a Gaussian distribution. The classifier applied can be either linear or nonlinear. After applying CSP the data is rotated and placed orthogonal.
 
-CSP is simple, computationally efficient with high classification performance. But it is not robust to noise and non-stationaries, prone to overfitting and requires many training examples. Several variants of CSP are researched and developed such as Filter Bank CSP, Regularized CSP, Invariant CSP\dots to overcome the disadvantages of vannila CSP.
+CSP is simple, computationally efficient with high classification performance. But it is not robust to noise and non-stationaries, prone to over-fitting and requires many training examples. Several variants of CSP are researched and developed such as Filter Bank CSP, Regularized CSP, Invariant CSP\dots to overcome the disadvantages of vanilla CSP.
 
 % \section{Feature Selection} 
 
-\section{Classification}
-With the required features extracted, the vectors can be forwarded to the classifier as a las t step in the BCI pipeline. Some of the most commonly used classifiers include SVM, LDA\dots These could also be neural networks, but neural network could also perform feature extraction, hence it would not be efficient to use neural network just for classification.
+\section{Classification} \label{clasff}
+With the required features extracted, the vectors can be forwarded to the classifier as a last step in the BCI pipeline. Some of the most commonly used classifiers include SVM, LDA\dots These could also be neural networks, but neural network could also perform feature extraction, hence it would not be efficient to use neural network just for classification. However several literature have used neural networks only as a classifier.
+\cite{2004_EEG_ML} discusses the machine learning methods, their application to BCI, and validating them for BCI. It discusses about SVM and how regularization is beneficial for BCI data. In case of nonlinear data, it can be converted to a linearly separable feature space and efficiently used for classification without any complexity. \cite{2006_EEG_ML_BrainState} discusses about how machine learning is applied to motor imagery with feedback.
 
-\subsection{Support Vector Machine (SVM)}
+\subsection{Support Vector Machines (SVM)}
+SVM \nomenclature{SVM}{Support Vector Machine}is the most commonly used classifiers as they provide highly accuracy with less compute power. The aim of SVM as a classifier is to find the hyperplane such that it separates the support vectors with a high margin. 
 
 \subsection{Linear Discriminant Analysis (LDA)}
+LDA \nomenclature{LDA}{Linear Discriminant Analysis} is considered to be optimal classifier given the following assumptions are true:
+\begin{enumerate}
+    \item Features of each class are Gaussian distributed.
+    \item Gaussian's of all classes have the same covariance matrix.
+    \item True class distributions are known.
+\end{enumerate}
+
+
+
+Given two class distributions $\mathcal{N} (\mu_1, \epsilon )$ and $\mathcal{N} (\mu_2, \epsilon  )$ , then LDA is defined by normal vectors
+
+\begin{equation} \label{eq:lda_w}
+    \begin{split}
+        w = \epsilon^{-1} (\mu_2 - \mu_1)
+    \end{split}
+\end{equation}
+and
+\begin{equation} \label{eq:lda_b}
+    \begin{split}
+        b = w^T(\mu_2 + \mu_1)/2
+    \end{split}
+\end{equation}
+
+ But as the true class distribution is not known, the distributions are estimated, which is usually different from the true value  and it determines the performance of the classifier. Shrinkage-LDA overcomes this problem by shrunk covariance matrix that is determined by optimal shrinkage parameter given by analytical and cross-validation methods.
 
 \section*{Summary}

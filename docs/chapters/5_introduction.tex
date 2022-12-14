@@ -1,57 +1,22 @@
 % \section*{Introduction}
-Human computer interaction has been evolving over the past decades, with evolving human needs. With developments in technologies, the physical 
-contact between the computer and the human is decreasing rapidly. Advanced systems which work on speech and gesture control still requires a minimal
-effort from the user to interact with the machine. Though these effort seem to be mere, it is a challenging task for humans with disabilities. 
-Systems which work on facial gestures bridge this gap to an extent but it does not completely what is the actual intent of the person. Brain Computer
-interface paves way to encode the persons intent and thoughts without the need for any physical effort. It provides enourmous capabilities for 
-physicaly challenged people to express themselves just by their thoughts. 
+Human computer interaction has been evolving over the past decades. With development in technologies, the physical contact between the computer and the human is decreasing rapidly. Advanced systems which work on speech and gesture control still requires a minimal effort from the user to interact with the machine. Though these effort seem to be mere, it is a challenging task for humans with disabilities. Systems which work on facial gestures bridge this gap to an extent but it does not completely understand what is the actual intent of the person. Brain Computer Interface paves way to encode the persons intent and thoughts without the need for any physical effort. It provides enormous capabilities for physically challenged people to express themselves just by their thoughts. 
 
-Autonomous vehicles are the future of mobility, several companies around the world invest and research on new technologies to solve new challenges 
-that appears in developing level 5 autonomy. The level of human interaction with the vehicle has been decreasing with increasing safety. However
-including human in the loop is necessary at certain times to avoid any undesirable events. Level  5 autonomous vehicles is still a long way to go, 
-but by bringing in a minimal interaction of the driver with the system, safety can be ensured. One of the ways of acheiving it is interfacing the
-thought and decission process of the driver to the autonomous vehicle, a process commonly referrred to as Brain-Computer interface. 
+Autonomous vehicles are the future of mobility, several companies around the world invest and research on new technologies to solve new challenges that appears in developing level 5 autonomy. The level of human interaction with the vehicle has been decreasing with increasing safety. However including human in the loop is necessary at certain times to avoid any undesirable events. Level 5 autonomous vehicles is still a long way to go, but by bringing in a minimal interaction of the driver with the system, safety can be ensured. One of the ways of achieving it is interfacing the thought and decision process of the driver to the autonomous vehicle, a process commonly referred to as Brain-Computer-Interface (BCI)\nomenclature{BCI}{Brain-Computer-Interface}. 
 
-Once shown in science fiction novels and movies, Brain-Computer Interface (BCI) has become widely researched and developed in the academic institutions 
-and at industries in the past decades. It has been applied and tested on mammals for a wide range of applications. However it has its own challenges
-and limitations. With evolving technologies, new innovations and discoveries are made to understand and decode the brain waves better. The analysis
-of the brain signals have seen a shift in the paradigm with the introduction of machine learning techniques. 
+Once shown in science fiction novels and movies, Brain-Computer Interface (BCI) has become widely researched and developed in the academic institutions and industries in the past decades. It has been applied and tested on mammals for a wide range of applications. However it has its own challenges and limitations. With evolving technologies, new innovations and discoveries are made to understand and decode the brain waves better. The analysis of the brain signals have seen a shift in the paradigm with the introduction of machine learning techniques. 
 
-Modern BCI design involves understanding brain dynamics, recognizing the patterns in the brain waves and derive the statistics of the data obtained
-optimize it and use them as features to predict or classify the task. However it is very challenging to create a BCI system that can work on any person
-as the brain signals are task specific and brain signal signatures are very unique to a person. The cortex foldings and the relevant functional maps are
-differnet across individuals. Even for the very same person, the brain synamics are non-stationary at all time scales adding to it, it is almost impossible 
-to place the electrodes exactly on the same location for every recording sessions. Further the psychological states of the user such as boredom, distraction\dots
-play a significant role in the quality of the signal measured. The signal-to-noise (SNR) ratio in a brain signal is very poor, that makes it
-difficult to obtain required information from brain signal. It is harder to spatially measure the data from one region as large collection of neurons
-are involved in many different activity, not just one. These challenges can vary a lot depending on the methods used to record and analyse the brain signals
-as well as the task that needs to be achieved.
+Modern BCI design involves understanding brain dynamics, recognizing the patterns in the brain waves and derive the statistics of the data obtained optimize it and use them as features to predict or classify the task. However it is very challenging to create a BCI system that can work on any person as the brain signals are task specific and brain signal signatures are very unique to a person. The cortex folding and the relevant functional maps are different across individuals. Even for the very same person, the brain dynamics are non-stationary at all time scales adding to it, it is almost impossible to place the electrodes exactly on the same location for every recording sessions. Further the psychological states of the user such as boredom, distraction\dots play a significant role in the quality of the signal measured. The Signal-to-Noise Ratio (SNR) \nomenclature{SNR}{Signal-to-Noise Ratio} in a brain signal is very poor, that makes it difficult to obtain required information from brain signal. It is harder to spatially measure the data from one region as large collection of neurons are involved in many different activity, not just one. These challenges can vary a lot depending on the methods used to record and analyse the brain signals as well as the task that needs to be achieved.
 
-Given the challenges, the goal of this work is to steer a simulated car in the CARLA environment using brain signals obtained from the OpenBCI headgear in real-time.
-The brain signal from 16 channel OpenBCI headgear is fed through signal processing pipeline to extract the relevant motor imagery features and classify it.
-The signal preprocessing pipeline constitutes reliable and conventional signal processing techniques as well as state-of-the-art deep learning techniques.
-Several tools, libraries and frameworks such as MNE, Numpy, Scipy, Scikit-learn and PyTorch are used to achieve the goal.
-The communication between the OpenBCI system and the signal processing pipeline is established using Lab Streaming Layer (LSL) and the steering information
-decoded by the signal processing pipeline is sent to CARLA through ROS1. The algorithms are packed into a ROS pack which consists of multithreaded nodes enabling
-real-time information transfer to CARLA. All the relevant code and references are made available in github. Several open-source datasets are used to setup the basic 
-brain signal processing pipeline and later tuned to work with the data obtained form OpenBCI headgear. 
+Given the challenges, the goal of this work is to steer a simulated car in the CARLA environment using brain signals obtained from the OpenBCI headgear. The brain signal from 16 channel OpenBCI headgear is fed through signal processing pipeline to extract the relevant Motor Imagery (MI) \nomenclature{MI}{Motor Imagery}features and classify the users intention. The signal preprocessing pipeline constitutes reliable and conventional signal processing techniques as well as state-of-the-art deep learning techniques. Several tools, libraries and frameworks such as MNE, Numpy, Scipy, Scikit-learn and PyTorch are used to achieve the goal. The communication between the OpenBCI system and the signal processing pipeline is established using Lab Streaming Layer (LSL) \nomenclature{LSL}{Lab Streaming Layer} and the steering information decoded by the signal processing pipeline is sent to CARLA through Robotic Operating System (ROS1) \nomenclature{ROS1}{Robotic Operating System -1}. The algorithms are packed into a ROS pack which consists of multi-threaded nodes enabling real-time information transfer to CARLA. All the relevant code and references are made available in GitHub. Several open-source datasets are used to setup the basic brain signal processing pipeline and later tuned to work with the data obtained form OpenBCI headgear. 
 
-\section{OpenBCI headgear}
-OpenBCI is an open-source BCI platform that develops hardware and software for BCI scientific research. It provides electrodes, interface boards, graphical user interface 
-and pythonAPI. In this work, the openBCI system consists of a 3D printed headgear with 16 EEG electrodes connected to Cython + Daisy board that interacts to the host machine wireless 
-through an external dongle via 
-serial communication. Cython is a 8-channel neural interface with a 32-bit processor which has a sampling frequency of 250Hz. It is topped with Daisy, an extension board which 
-can add upto 8 more channels to the system. This leads to drop in the sampling frequency to 125HZ. With a WiFi module it is possible to achieve 1kHz.
-The potential difference between the electrodes and the reference points such as 
-linked mastoids, inion or nasion. The measurements can be visualized on the host machine using OpenBCI GUI. The electrodes are placed in the internationally recognized 10-20 system.
-The measurement data can be streamed to the system through BrainFlow or Lab Streaming Layer (LSL). 
+\subsection*{OpenBCI headgear}
+OpenBCI is an open-source BCI platform that develops hardware and software for BCI scientific research. It provides electrodes, interface boards, graphical user interface and python API. In this work, the OpenBCI system consists of a 3D printed headgear with 16 EEG electrodes connected to Cython + Daisy board that interacts to the host machine wireless through an external dongle via serial communication. Cython is a 8-channel neural interface with a 32-bit processor which has a sampling frequency of 250Hz. It is topped with Daisy, an extension board which can add up to 8 more channels to the system. This leads to drop in the sampling frequency to 125HZ. With a WiFi module it is possible to achieve 1kHz. The potential difference between the electrodes and the reference points such as linked mastoids, inion or nasion. The measurements can be visualized on the host machine using OpenBCI GUI. The electrodes are placed in the internationally recognized 10-20 system. The measurement data can be streamed to the system through BrainFlow or LSL. 
 
-\section{CARLA}
-CARLA is an open-source simulator to develop, train and validate autonomous driving systems. It supports Robotic Operating System (ROS1) for establishing communication between CARLA
-server and clients that can feed into or extract data from CARLA environment.
+\subsection*{CARLA}
+CARLA \cite{2017_Carla} is an open-source simulator to develop, train and validate autonomous driving systems. It supports ROS1 for establishing communication between CARLA server and clients that can feed into or extract data from CARLA environment.
 
-\section{MNE}
-MNE is an open-source python package for exploring, visualizing and analyzing neurophysiological data. It provides support for various preprocessing, feature extraction and classification
+\subsection*{MNE}
+MNE \cite{2013_MNE} is an open-source python package for exploring, visualizing and analyzing neuro-physiological data. It provides support for various preprocessing, feature extraction and classification
 steps in brain signal analysis.
 
 \section*{Summary} 

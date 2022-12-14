@@ -89,9 +89,6 @@
   },
   "workbench.startupEditor": "none",
   "latex-workshop.bibtex-fields.sort.enabled": true,
-  "latex-workshop.latex.bibDirs": [
-      "/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/docs/bib"
-],
 "python.globalModuleInstallation": true,
 "python.analysis.extraPaths": [
     "..",
