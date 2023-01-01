@@ -135,6 +135,10 @@ def extractBCI3(runs = 0, person_id = 0):
     # Remove dots from channel names in raw.info['ch_names']
     new_names = []
     for ch_name in new_name:
+        if ch_name == 'T7':
+            ch_name = 'T9'
+        if ch_name == 'T8':
+            ch_name = 'T10'
         new_names.append(ch_name.split('.')[0])
 
     mne.rename_channels(info, dict(zip(info['ch_names'], new_names)))

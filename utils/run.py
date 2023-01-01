@@ -19,10 +19,9 @@ from models.DLSTM_MI_2019 import ATTNnet
 import brainflow as bf
 import matplotlib.pyplot as plt
 
-def run(filename = 'dummy.npz'):
-    dCfg = OCIParams()
+def run(filename = 'dummy.npz', nCfg = EEGNetParams(), dCfg = PhysionetParams()):
+    # dCfg = OCIParams()
     # dCfg = PhysionetParams()
-    nCfg = EEGNetParams()
 
     # filename = 'Physionet_16locl_ssp_car_ica_RAW_[3, 4, 7, 8, 11, 12]_1.npz' # ep x cCH x EEGch x Ts
     # filename = 'Physionet_16locl_STAT_[3, 4, 7, 8, 11, 12]_1.npz'# ep x EEGch x n_seg x n_stats
@@ -60,12 +59,15 @@ def run(filename = 'dummy.npz'):
     for fold, (data.train_idx, data.val_idx) in enumerate(crsval.split(train_x)):
         print(f'   ############### Fold - {fold} ######################')
         n_s,cCh,n_chan,n_T = datacont.x.shape
-        F1, D = 12,4
-        F2 = 50
-        # model = CasCnnRnnnet(n_classes, n_seg = cCh, n_row_img = n_chan, n_row_col= n_T, n_layers = 3, dt = 0.55)
-        # model = ATTNnet(n_classes, cCh*n_T, cCh, n_layers = 3, dt = 0.55)
-        model =  EEGnet(n_classes = n_classes, n_chan = n_chan, n_T = n_T,
-                sf = dCfg.sfreq, dt = 0.7, F1 =F1, F2 = F2, D =D)
+        if nCfg.name == 'EEGNet':
+            F1, D = 12,4
+            F2 = 50
+            model =  EEGnet(n_classes = n_classes, n_chan = n_chan, n_T = n_T,
+                    sf = dCfg.sfreq, dt = 0.7, F1 =F1, F2 = F2, D =D)
+        elif nCfg.name =='ATTNnet':
+            model = ATTNnet(n_classes, n_s, cCh, n_chan, n_T, n_layers = 3, dt = 0.2, nCfg=ATTNnetParams())
+        elif nCfg.name =='CasCnnRnnnet':
+            model = CasCnnRnnnet(n_classes, n_seg = cCh, n_row_img = n_chan, n_row_col= n_T, n_layers = 3, dt = 0.55)
 
         tb_comment = f'batch_size={nCfg.train_bs}, lr={nCfg.lr}'
         tb_info = (f'logs/{model._get_name()}/{dCfg.name}/{filename}', tb_comment)
@@ -77,12 +79,13 @@ def run(filename = 'dummy.npz'):
         else:
             loss = torch.nn.CrossEntropyLoss() # No softmax required at the last layer, Multiclass classification
 
-        optimizer = optim.Adam(model.parameters(), lr=0.00153835)
+        optimizer = optim.Adam(model.parameters(), lr= nCfg.lr)
         # lambda1 = lambda epoch: 0.1 ** epoch
-        LRscheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
+        LRscheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size= nCfg.step_size, gamma=nCfg.gamma)
 
-        acc_train, acc_val, f1_train, f1_val = train_and_validate(data,model,loss,optimizer, LRscheduler,
-                                                                    tb , dCfg, nCfg,epochs = 300)
+        acc_train, acc_val, f1_train, f1_val, roc = train_and_validate(data,model,loss,optimizer, LRscheduler,
+                                                                    tb , dCfg, nCfg,epochs = nCfg.epochs)
+
 
         # jit_model = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/trial.pt'
         # model_scripted = torch.load(jit_model)
@@ -95,7 +98,7 @@ def run(filename = 'dummy.npz'):
         traincrossvalacc.append(acc_train), valcrossvalacc.append(acc_val)
         traincrossvalf1.append(f1_train), valcrossvalf1.append(f1_val)
         # profiler(model, optimizer, loss, data, LRscheduler, tb_info[0])
-        if f1_val > 0:
+        if f1_val > 0.9:
             best_model = f1_val
             print('Saving the model.....')
             torch.save(model,f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_carla.pt'}")
@@ -110,7 +113,7 @@ def run(filename = 'dummy.npz'):
         
         datacont = DataContainer(test_x, test_y)
         test_loader = DataLoader(datacont, batch_size=1, pin_memory=True, num_workers= nCfg.num_wrkrs)
-        _, f1_test = test_net(model, test_loader, tb, dCfg)
+        _, acc_test, f1_test, roc_test, cf_val = test_net(model, test_loader, tb, dCfg)
         print(f'Test F1 Score : {f1_test:.3f}\n')
         testcrossval.append(f1_test)
     
@@ -118,6 +121,7 @@ def run(filename = 'dummy.npz'):
     print(f"Training  : Accuracy : {np.mean(traincrossvalacc):.3f}, F1 Score : {np.mean(traincrossvalf1):.3f}")
     print(f"Validation: Accuracy : {np.mean(valcrossvalacc):.3f}, F1 Score : {np.mean(valcrossvalf1):.3f}")
     print(f"Tests: {np.mean(testcrossval)}")
+    return acc_test, f1_test, roc_test, cf_val
 
 if __name__ =='__main__':
     run('OCIParams_locl_car_RAWnorm.npz')

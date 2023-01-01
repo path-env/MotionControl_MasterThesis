@@ -30,8 +30,11 @@ class DataContainer(Dataset):
                 sys.exit(1)
             self.x = torch.tensor(feat)#.unsqueeze(1)
             if not label.__contains__(0):
-                label = label-1
-            self.y = torch.tensor(label)
+                label = label-label.min()
+            if len(np.unique(label)) <= 2:
+                self.y = torch.tensor(label, dtype= torch.float32)
+            else:
+                self.y = torch.tensor(label, dtype= torch.long)
     
     def __getitem__(self, index):
         return self.x[index,:], self.y[index]

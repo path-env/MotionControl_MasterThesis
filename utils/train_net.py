@@ -48,9 +48,10 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
 
         # Training Loop
         model.train()
+        prob_train = []
         for i, (inputs, labels) in enumerate(train_loader):
             inputs = inputs.to(device, dtype = dtype)
-            labels = labels.to(device, dtype = torch.long)
+            labels = labels.to(device)
             optim.zero_grad(set_to_none= True)
             outputs = model(inputs)#.flatten()
             # print(outputs.flatten())
@@ -69,6 +70,7 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
             # print("Batch number: {:03d}, Training: Loss: {:.4f}, Accuracy: {:.4f}".format(i, loss.item(), acc.item()))
             
             overall_label_train.append(labels.tolist())
+            # prob_train.append(outputs)
             if model.n_classes >1: # Multiclass classification
                 overall_predic_train.append(torch.argmax(torch.softmax(outputs, dim =1),dim=1).tolist())
             else: # Binary classification
@@ -77,11 +79,12 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
         lr = (LRscheduler.get_last_lr()[0])
 
         # Validation - No gradient tracking needed
+        prob_val = []
         with torch.inference_mode():
             model.eval()
             for j, (input, labels) in enumerate(val_loader):
                 input = input.to(device, dtype = dtype)
-                labels = labels.to(device, dtype = torch.int64)
+                labels = labels.to(device)
                 outputs = model(input)#.flatten()
                 loss = loss_fn(outputs, labels)
                 valid_loss += loss.item() * input.size(0)
@@ -95,6 +98,7 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
                 #print("Validation Batch number: {:03d}, Validation: Loss: {:.4f}, Accuracy: {:.4f}".format(j, loss.item(), acc.item()))
 
                 overall_label_val.append(labels.tolist())
+                # prob_val.append(outputs)
                 if model.n_classes >1: # Multiclass classification
                     overall_predic_val.append(torch.argmax(torch.softmax(outputs, dim =1),dim=1).tolist())
                 else: # Binary classification
@@ -142,8 +146,8 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
         prec_val, recl_val, f1_val, _ = metrics.precision_recall_fscore_support(overall_label_val, 
                         overall_predic_val, zero_division=1, average='weighted', labels=label)
         acc_val  = metrics.accuracy_score(overall_label_val, overall_predic_val)
-        # roc = metrics.roc_auc_score(overall_label_val, overall_predic_val, average='micro', 
-        #     multi_class = 'ovo')
+        # roc = metrics.roc_auc_score(overall_label_val, overall_predic_val, average='macro', 
+        #     multi_class = 'ovr')
         # cf_val = metrics.multilabel_confusion_matrix(overall_label_val, overall_predic_val)
         # # df_cm = pd.DataFrame(cf_val/np.sum(cf_val) * 10, index=[i for i in classes],
         # #                  columns=[i for i in classes])
@@ -192,7 +196,7 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
     # Save if the model has best accuracy till now
     #torch.save(model, dataset+'_model_'+str(epoch)+'.pt')
     tb.close()    
-    return acc_train, acc_val, f1_train, f1_val
+    return acc_train, acc_val, f1_train, f1_val, 0
     # return np.mean(history['acc_train']), np.mean(history['acc_val']), np.mean(history['f1_train']), np.mean(history['f1_val']) 
 
 def test_net(model, test_loader, tb, dCfg):
@@ -201,6 +205,7 @@ def test_net(model, test_loader, tb, dCfg):
     device = 'cuda' if torch.cuda.is_available() else "cpu"
     dtype = torch.float32 if device == 'cuda' else torch.float32
     model = model.to(device, dtype = dtype)
+    prob_test = []
     with torch.inference_mode():
         model.eval()
         for i, (inputs, labels) in enumerate(test_loader):
@@ -213,18 +218,21 @@ def test_net(model, test_loader, tb, dCfg):
             label_test.append(labels.tolist())
             if model.n_classes >1: # Multiclass classification
                 predic_test.append(torch.argmax(torch.softmax(outputs, dim =1),dim=1).tolist())
+                prob_test.append(torch.softmax(outputs, dim =1).tolist())
             else: # Binary classification
                 predic_test.append(torch.round(torch.sigmoid(outputs)).tolist())
+                prob_test.append(torch.sigmoid(outputs).tolist())
 
     overall_label_test = np.array(label_test).flatten()
     overall_predic_test  = np.array(predic_test).flatten()
+    prob_test = np.array(prob_test).reshape(len(label_test), model.n_classes)
 
     prec_test, recl_test, f1_test, _ = metrics.precision_recall_fscore_support(overall_label_test, 
                     overall_predic_test, zero_division=1, average='weighted', labels= list(dCfg.event_dict.values()))
 
     acc_test  = metrics.accuracy_score(overall_label_test, overall_predic_test)
-    # roc_test = metrics.roc_auc_score(overall_label_test, overall_predic_test, average='micro', 
-    #     multi_class = 'ovo')
+    roc_test = metrics.roc_auc_score(overall_label_test, prob_test, average='macro', 
+        multi_class = 'ovr')
     cf_val = metrics.multilabel_confusion_matrix(overall_label_test, overall_predic_test)
 
     tb.add_scalar('f1_test',f1_test,i)
@@ -232,7 +240,7 @@ def test_net(model, test_loader, tb, dCfg):
     tb.add_scalar('prec_test',prec_test,i)
     tb.add_scalar('recl_test',recl_test,i)
     # tb.add_scalar('roc_test',roc_test,i)
-    return tb, f1_test
+    return tb, acc_test, f1_test, roc_test, cf_val
 
 #%%
 if __name__ == "__main__":

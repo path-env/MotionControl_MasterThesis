@@ -20,10 +20,12 @@ class EEGNetParams():
         self.val_bs = 1
         self.train_bs = 1
         self.eeg_sample_count = 240 # How many samples are we training
-        self.lr = 0.01 # How hard the network will correct its mistakes while learning
+        self.lr = 0.00153835 # How hard the network will correct its mistakes while learning
+        self.gamma = 0.1
         self.optim_moment= 0.9
         self.num_wrkrs = 3
         self.eeg_sample_length = 226 # Number of eeg data points per sample
+        self.step_size = 50
 
 class TFNetParams():
     def __init__(self) -> None:
@@ -35,23 +37,27 @@ class TFNetParams():
         self.train_bs = 3
         self.eeg_sample_count = 240 # How many samples are we training
         self.lr = 0.001 # How hard the network will correct its mistakes while learning
+        self.gamma = 0.1
         self.optim_moment= 0.9
         self.num_wrkrs = 3
         self.eeg_sample_length = 226 # Number of eeg data points per sample
+        self.step_size = 50
 
 class ATTNnetParams():
     def __init__(self) -> None:
         self.name = 'ATTNnet'
-        self.epochs = 100
+        self.epochs = 300
         self.val_split = 0.25
         self.test_split = 0
-        self.val_bs = 3
-        self.train_bs = 3
+        self.val_bs = 1
+        self.train_bs = 1
         self.eeg_sample_count = 240 # How many samples are we training
-        self.lr = 0.01 # How hard the network will correct its mistakes while learning
+        self.lr = 0.1 # How hard the network will correct its mistakes while learning
+        self.gamma = 0.1
         self.optim_moment= 0.9
         self.num_wrkrs = 3
         self.eeg_sample_length = 226 # Number of eeg data points per sample
+        self.step_size = 100
 
 class CasCnnRnnnetParams():
     def __init__(self) -> None:
@@ -59,13 +65,15 @@ class CasCnnRnnnetParams():
         self.epochs = 100
         self.val_split = 0.25
         self.test_split = 0
-        self.val_bs = 3
-        self.train_bs = 3
+        self.val_bs = 1
+        self.train_bs = 1
         self.eeg_sample_count = 240 # How many samples are we training
         self.lr = 0.01 # How hard the network will correct its mistakes while learning
+        self.gamma = 0.1
         self.optim_moment= 0.9
         self.num_wrkrs = 3
         self.eeg_sample_length = 226 # Number of eeg data points per sample
+        self.step_size = 100
 
 ######################################################
 # Data configuration parameters
@@ -83,7 +91,8 @@ class PhysionetParams():
         self.event_dict = dict({'T0':1, 'T1':2, 'T2':3}) 
         self.baseline = (None,0)
         self.wst_scale, self.wst_noAngles = 2,8
-        self.tmin, self.tmax = -1, 1 #2 #-2, 4
+        self.tmin, self.tmax = -2,4
+        self.feat_tmin, self.feat_tmax = 1,4
         self.test_split = 0.1
         self.IMG_size = 10
         self.IMG_ovrlp = 5
@@ -91,7 +100,7 @@ class PhysionetParams():
 class BCI3Params():
     def __init__(self) -> None:
         self.name ='BCI3IVa'
-        self.sfreq = 110# resampled for OpenBBCI headset #100 #HZ
+        self.sfreq = 125# resampled for OpenBBCI headset #100 #HZ
         self.inion = ['I1', 'I2']
         self.elec_lines_f = 49 #HZ  # Error with filtering
         self.ssp_n_eeg = 2 # No . of EEG SSP components
@@ -102,6 +111,7 @@ class BCI3Params():
         self.baseline = (None,0)
         self.wst_scale, self.wst_noAngles = 2,8
         self.tmin, self.tmax =-1,2 #-0.5, 1
+        self.feat_tmin, self.feat_tmax = -0.5, 1
         self.test_split = 0.1
 
 #%% OpenBCI Head gear params
@@ -120,6 +130,7 @@ class OCIParams():
         self.baseline = (None, -2)
         self.wst_scale, self.wst_noAngles = 2,8
         self.tmin, self.tmax = -6,3
+        self.feat_tmin, self.feat_tmax = -1,3
         self.test_split = 0.2
 
 

@@ -32,3 +32,8 @@ docs/MotionControl.run.xml
 docs/MotionControl.synctex.gz
 docs/MotionControl.thm
 docs/MotionControl.toc
+docs/MotionControl.nlo
+main/preproc/Physionet_ssp_car_ica_epo.fif
+main/preproc/Physionet_trial_epo.fif
+main/preproc/Physionet_trial2_epo.fif
+main/preproc/Physionet_trial_epo.fif

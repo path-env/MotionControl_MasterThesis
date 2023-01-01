@@ -181,7 +181,7 @@ class Preproc():
 # %% [markdown]
 # ### Extraction
 def preproc(raw):
-    pick_ch = bm.C_Channels  # Considering only the channels that map to topo map functionality
+    pick_ch = bm.oci_Channels  # Considering only the channels that map to topo map functionality
     raw.pick_channels(pick_ch); # inplace
 
     # Parameters

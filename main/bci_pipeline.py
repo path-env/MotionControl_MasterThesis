@@ -1,4 +1,3 @@
-# %%
 # as png
 # %matplotlib inline 
 #  interactable inside ide
@@ -6,9 +5,10 @@
 ### interactable seperate window
 # %matplotlib tk 
 
-# %%
 from time import time
 import mne
+import warnings
+
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -46,11 +46,12 @@ import torch.optim.lr_scheduler as lr_scheduler
 
 from sklearn.model_selection import ShuffleSplit
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, cross_validate
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.tree import DecisionTreeClassifier as DTC
 from sklearn.svm import SVC
 from sklearn.kernel_approximation import RBFSampler
+from sklearn.metrics import make_scorer, roc_auc_score
 
 from main.extraction.data_extractor import DataContainer
 from models.neurotec_edu import Neurotech_net
@@ -67,11 +68,9 @@ class BrainSignalAnalysis():
         # Parameters
         elec_lines_f, L_cutoff, H_cutoff = self.dCfg.elec_lines_f, self.aCfg.mu_rhythm[0], self.aCfg.beta_rhythm[-1] #HZ
 
-        # %%
         self.plot_enable = 0
         ica_ssp_comp = 0
 
-        # %%
         # Remove and Filter signal noises
         # raw.notch_filter(elec_lines_f)
         rawfltrd = raw.filter(L_cutoff, H_cutoff, verbose= False, fir_design='firwin', 
@@ -91,7 +90,6 @@ class BrainSignalAnalysis():
         self.scale = dict(mag=1e-12, grad=4e-11, eeg=100e-6)
         mne_plot_raw = dict(scalings=self.scale, clipping='transparent', order=self.pick_ch_idx)
 
-        # %%
         ## Analysis after Spectral filter
         if self.plot_enable ==1:
             rawfltrd.plot(scalings=self.scale, clipping='transparent'); #, order=self.pick_ch_idx
@@ -132,19 +130,18 @@ class BrainSignalAnalysis():
     def normalize(self, x, max = 1, min =0):
         # Normalizing
         for ep in range(x.shape[0]):
-            for ch in range(x.shape[1]):
-                x[ep,ch,:] = (x[ep,ch,:] - x[ep,ch,:].min()) / (x[ep,ch,:].max() - x[ep,ch,:].min())
-                x[ep,ch,:] = x[ep,ch,:] * (max - min) + min
+            for t in range(x.shape[2]):
+                x[ep,:,t] = (x[ep,:,t] - x[ep,:,t].min()) / (x[ep,:,t].max() - x[ep,:,t].min())
+                x[ep,:,t] = x[ep,:,t] * (max - min) + min
         return x
     
     def standardize(self, x):
         for ep in range(x.shape[0]):
-            for ch in range(x.shape[1]):
-                x[ep,ch,:]-= np.mean(x[ep,ch,:])
-                x[ep,ch,:] = (x[ep,ch,:]/np.std(x[ep,ch,:]) )/3
+            for t in range(x.shape[2]):
+                x[ep,:,t]-= np.mean(x[ep,:,t])
+                x[ep,:,t] = (x[ep,:,t]/np.std(x[ep,:,t]) )/3
         return x
 
-    # %%
     # Remove the artifacts
     def artifact_removal(self, method, save_epochs = False):
         rawfltrd = self.rawfltrd.copy()
@@ -176,7 +173,7 @@ class BrainSignalAnalysis():
         if method.find('ica')!=-1:
             # cov = mne.Covariance()
             # rawfltrd_ica = rawfltrd_car.apply_proj().copy()
-            ica = mne.preprocessing.ICA(n_components=self.dCfg.ica_n_comp, noise_cov= None, random_state=2,
+            ica = mne.preprocessing.ICA(n_components=self.dCfg.ica_n_comp, noise_cov= None, random_state=None,
                                      method='picard',max_iter=500, verbose=False)
             # Create an instance of RAW
             # rawfltrd_ica = raw.copy()
@@ -187,18 +184,15 @@ class BrainSignalAnalysis():
             # Using EOG Channel to select ICA Components
             ica.exclude , ex_scores = ica.find_bads_eog(rawfltrd, ch_name= self.dCfg.eog_ref_ch, verbose = False);#,threshold=2);
 
-            # %%
             ## TODO: ICA template matching for Multiple subjects
             ## TODO: Plot ICA evoked.
 
-            # %%
             if len(ica.exclude) ==0:
                 print('!!!!!!!!!!! No components excluded !!!!!!!!!!!!!!!!')
             # ica.exclude = []#=[1,6]
             # ica.plot_scores(ex_scores);
             # ica.plot_properties(rawfltrd_ica, picks = ica.exclude)
 
-            # %%
             ## Analysis after ICA
             if self.plot_enable ==1:
                 # ica.plot_components();
@@ -214,18 +208,16 @@ class BrainSignalAnalysis():
                 # rawfltrd.plot(scalings=self.scale, clipping='transparent', title='Raw Filtered- w Projection', proj=True); #, order=pick_ch_idx
                 # rawfltrd_ssp.plot(scalings=self.scale, clipping='transparent', title='Raw Filtered- wo Projection', proj=False);# , order=pick_ch_idx
 
-            # %%
+
             # rawfltrd_proj = rawfltrd_car.copy()
             # rawfltrd_proj.apply_proj()
             # rawfltrd_proj.plot(scalings=self.scale, clipping='transparent', title='ICA+SSP', proj=False);
 
-            # %%
             if self.plot_enable ==1:
                 # rawfltrd_ica.plot_psd(fmin=L_cutoff, fmax=H_cutoff,picks=['C4','C2','C6']);
                 # rawfltrd_proj.plot_psd(fmin=L_cutoff, fmax=H_cutoff,picks=['C4','C2','C6']);
                 pass
 
-        # %% 
         # ### Create Epcohs from events
         # Capture events from annotations
         event_data = mne.events_from_annotations(rawfltrd, verbose=False)
@@ -237,7 +229,7 @@ class BrainSignalAnalysis():
         # epochs1 = mne.Epochs(rawfltrd, events= event_marker, event_id= event_ids, baseline = (0,0))
         epochs = mne.Epochs(rawfltrd, events= event_marker, tmin= self.dCfg.tmin, tmax=self.dCfg.tmax, event_id= event_ids, on_missing = 'ignore',  
                         verbose= False, proj= True, reject = None, baseline=self.dCfg.baseline, preload = True) # Baseline is default (None,0)
-        # epochs.equalize_event_counts() # Shape = epochs x chan x timepnts
+        epochs.equalize_event_counts() # Shape = epochs x chan x timepnts
         self.rawfltrd = rawfltrd
         # epochs.load_data()
         # epochs._data = self.normalize(epochs.get_data())
@@ -247,19 +239,16 @@ class BrainSignalAnalysis():
         # T1 = epochs['T1'].average()
         # T2 = epochs['T2'].average()
 
-        # %%
         # evoked = epochs.average()
         # if self.plot_enable ==1:
         #     ica.plot_sources(evoked);
         #     ica.plot_overlay(evoked);
 
-        # %%
         # epochs.to_data_frame(index=['condition', 'epoch'],long_format=True)
         if self.plot_enable ==1:
             self.epochs.plot();
             # epochs.plot_drop_log();
 
-        # %%
         ## Data whitening
         if self.plot_enable==1:   
             noise_cov = mne.compute_covariance(self.epochs, tmax=0., method='shrunk', rank=None, verbose='error')                                
@@ -275,21 +264,20 @@ class BrainSignalAnalysis():
         if epoch_file !=None:
             # self.epochs.delete()
             self.epochs = mne.read_epochs(epoch_file)
+            self.epochs.equalize_event_counts()
             self.classes = list(self.epochs.event_id.keys())
             # self.epochs = self.epochs[self.classes[:2]] # for binary classification
             
         # self.epochs.load_data()
         self.labels = self.epochs.events[:,-1]
         if not self.labels.__contains__(0):
-            self.labels = self.labels-1
+            self.labels = self.labels-self.labels.min()
         # if len(np.unique(self.labels)) ==3: # for binary classification
         #     self.labels = np.concatenate([np.zeros(self.epochs[self.classes[0]].get_data().shape[0]), 
         #                             np.ones(self.epochs[self.classes[1]].get_data().shape[0])])
-        # %%
         if method.find('_RAW')!=-1:
             self.features = self.epochs.get_data()
 
-        # %% 
         ## Time- Frequency
         if method.find('_TF')!=-1:
             # 1/f removal- Power Normalization - Epochs TFR
@@ -312,24 +300,25 @@ class BrainSignalAnalysis():
             # print(self.features.shape)
             # print(self.labels.shape)
 
-        # %%
         ## Common Spatial Patterns
         if method.find('_CSP')!=-1:
             self.feat_ext = CSP(n_components=self.dCfg.csp_n_comp, reg='ledoit_wolf', log=True, transform_into= 'average_power', #log=None, norm_trace=False, rank='full',cov_est = 'epoch')#
                         cov_est = 'concat',rank='full', norm_trace= True)
             # self.features = self.feat_ext.fit_transform(self.epochs.get_data(), self.labels)
-            self.features = self.epochs.get_data()
+            self.features = self.epochs.crop(tmin =self.dCfg.feat_tmin, tmax= self.dCfg.feat_tmax).get_data() # 
 
         ## Wavelet Scattering Transform
         if method.find('_WST')!=-1:
-            M,N = self.epochs.get_data().shape[1:]
+            epoch_crp = self.epochs.crop(tmin =self.dCfg.feat_tmin, tmax= self.dCfg.feat_tmax).copy()
+            M,N = epoch_crp.get_data().shape[1:]
             self.feat_ext = Scattering2D(J=self.dCfg.wst_scale,shape=(M,N),L=self.dCfg.wst_noAngles)
             # self.epoch_data = self.epochs.get_data().reshape(self.epochs.get_data().shape[0],-1)
-            self.features = self.epochs.get_data()
+            self.features = epoch_crp.get_data()
 
         ## Mean, skewness, variance, kurtosis, zerocrossing, area under signal, peak to peak, 
         ## amplitude spectral density, power spectral density, power of each freq band
         if method.find('_STAT')!=-1:
+            # warnings.filterwarnings("error")
             # break into segments
             epoch_data = self.epochs.get_data()
             n_segments = 5 #*2
@@ -344,31 +333,36 @@ class BrainSignalAnalysis():
                     seg_size = ((int(window_size//2)))*2 + 8
                     for t in range(0,n_T, int(window_size//2)):
                         seg = epoch_data[ep,ch,t:t+window_size]
-                        # mean
-                        M = np.mean(seg)# , axis = 2)
-                        # variance
-                        V = np.var(seg) #, axis =2)
-                        # skew
-                        S = stats.skew(seg) #, axis = 2)
-                        # kurtosis
-                        K = stats.kurtosis(seg)#, axis = 2)
-                        # zerocrossing
-                        Z = len(np.where(seg>0)[0])
-                        # area under signal
-                        A = np.trapz(seg, dx =1 )#, axis =2)
-                        # p2p
-                        P = np.max(seg) -np.min(seg)#, axis =2) - np.min(seg, axis =2)
-                        # Amp spectral den
-                        Psd = signal.periodogram(seg)[1]#, axis =2)
-                        Asd = np.sqrt(Psd)
-                        Psd = ((Psd - Psd.min()) / (Psd.max() - Psd.min()).tolist())[1:]
-                        Asd = ((Asd - Asd.min()) / (Asd.max() - Asd.min()).tolist())[1:]
+                        if len(seg)>1:
+                            # mean
+                            M = np.mean(seg)# , axis = 2)
+                            # variance
+                            V = np.var(seg) #, axis =2)
+                            # skew
+                            S = stats.skew(seg) #, axis = 2)
+                            # kurtosis
+                            K = stats.kurtosis(seg)#, axis = 2)
+                            # zerocrossing
+                            Z = len(np.where(seg>0)[0])
+                            # area under signal
+                            A = np.trapz(seg, dx =1 )#, axis =2)
+                            # p2p
+                            P = np.max(seg) -np.min(seg)#, axis =2) - np.min(seg, axis =2)
+                            # Amp spectral den
+                            Psd = signal.periodogram(seg)[1]#, axis =2)
+                            Asd = np.sqrt(Psd)
+                            Psd = ((Psd - Psd.min()) / (Psd.max() - Psd.min()).tolist())[1:]
+                            Asd = ((Asd - Asd.min()) / (Asd.max() - Asd.min()).tolist())[1:]
+                            # power 
                         # power 
-                        PFB = np.trapz(Psd)#, axis=2)
-                    
-                        seg = [M,V,S,K,Z,A,P,*Psd,*Asd,PFB]
-                        if len(seg) == seg_size:
-                            ch_feat.append(list(seg))
+                            # power 
+                        # power 
+                            # power 
+                            PFB = np.trapz(Psd)#, axis=2)
+                        
+                            seg = [M,V,S,K,Z,A,P,*Psd,*Asd,PFB]
+                            if len(seg) == seg_size:
+                                ch_feat.append(list(seg))
                             
                     features.append(ch_feat)
                 samples.append(features)
@@ -418,9 +412,9 @@ class BrainSignalAnalysis():
         # Test train split
         if self.features.shape[0] > 3:
             self.train_x, self.test_x,self.train_y,self.test_y = train_test_split(self.features, self.labels, 
-                                    test_size= self.dCfg.test_split, stratify= self.labels, random_state= 42)
+                                    test_size= self.dCfg.test_split, stratify= self.labels, random_state= None)
 
-            if len(self.train_x.shape) <4:
+            if len(self.train_x.shape) <4 and method.find('_CNN')!=-1:
                 self.train_x = np.expand_dims(self.train_x, axis=1)
                 self.test_x = np.expand_dims(self.test_x, axis=1)
         # self.train_x = (self.train_x - self.train_x.min()) / (self.train_x.max() - self.train_x.min())
@@ -433,7 +427,6 @@ class BrainSignalAnalysis():
                 np.savez(f'data/test/{self.dCfg.name}_{method}',self.test_x, self.test_y)            
                 print(f'Features saved to: data/test|train/{self.dCfg.name}_{method}')
             
-        # %%
         # classify
     def classifier(self, method, save_results = True, save_model = True, feat_file = None):
         if feat_file is not None:
@@ -455,7 +448,7 @@ class BrainSignalAnalysis():
             _,_,n_chan,n_T = data.x.shape
             n_classes = np.unique(self.train_y).shape[0]
 
-            # Model
+            # Modelself.features
             model = eval(method.split('_')[-2:-1][0])
             model = model(n_classes, n_chan, n_T, self.dCfg.sfreq)#.float()
             # Loss function
@@ -482,41 +475,46 @@ class BrainSignalAnalysis():
                 torch.save(model, f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified.pt'}")
 
         if method.find('_ML')!=-1:
-            cv = ShuffleSplit(10, test_size = 0.2, random_state=1)
+            cv = ShuffleSplit(10, test_size = 0.2, random_state = None)
             # cv_split = cv.split(self.epochs.get_data(), self.train_y)
             # rbf = RBFSampler(gamma=1, random_state=1)
+            # self.features = rbf.fit_transform(self.features)
             clf = eval(method.split('_')[-2:-1][0])
-            # clf = SVC()
-            # pipe = Pipeline([('CSP', self.feat_ext),('CLF', clf)])
-            pipe = Pipeline([('scatter', self.feat_ext), ('clf', clf())])
-            scores = cross_val_score(pipe, self.train_x , self.train_y, cv = cv, verbose=False)
-            class_balance = np.mean(self.train_y == self.train_y[0])
+            if method.split('_')[-2:-1][0] == 'SVC':
+                clf = clf(probability = True)
+            else:
+                clf = clf()
+            pipe = Pipeline([('features', self.feat_ext), ('clf', clf)])
+            # scores = cross_val_score(pipe, self.features , self.labels, cv = cv, verbose=False)
+            scores = cross_validate(pipe, self.features, self.labels, cv=cv, scoring={'f1':'f1_macro', 'acc':'accuracy', 
+                    'roc': make_scorer(roc_auc_score,multi_class='ovr',average="macro",needs_proba=True)}, verbose=False, return_estimator=False)
+            class_balance = np.mean(self.labels == self.labels[0])
             class_balance = max(class_balance, 1. - class_balance)
-            print("Classification accuracy: %f / Chance level: %f" % (np.mean(scores),class_balance))
-                           
+            print(f"Classification accuracy: {np.mean(scores['test_acc'])} / Chance level: {class_balance}")
+            return scores                          
 
 if __name__ =='__main__':
-    runs = [3, 4, 7, 8, 11, 12]
+    runs = [5, 6, 9, 10, 13, 14] #[3, 4, 7, 8, 11, 12]
     person_id = 1
     # raw = extractBCI3(runs , person_id)
-    # raw = extractPhysionet(runs, person_id)
-    data_cfg = OCIParams()
-    raw = extractOCI([], 1, Expr_name = 'P2_Day*_125')
+    raw = extractPhysionet(runs, person_id)
+    data_cfg = PhysionetParams()
+    # raw = extractOCI([], [], Expr_name = 'P2_Day9_125')
     analy_cfg = globalTrial()
     net_cfg = EEGNetParams()
-    artifact_removal_methods =  'locl_ssp_car_ica'
-    feat_extract_methods = artifact_removal_methods+'_TF'
-    classi_methods = feat_extract_methods+'_CNN'
+    # artifact_removal_methods =  'locl_ssp_car_ica'
+    # feat_extract_methods = artifact_removal_methods+'_TF'
+    # classi_methods = feat_extract_methods+'_CNN'
     
-    methods = 'locl_IMG_EEGnet_CNN'
-    methods = f'locl_car_RAWnorm_{0}_{0}'
+    # methods = 'locl_IMG_EEGnet_CNN'
+    methods = f'locl_car_ssp_ica_STATnorm_SVC_ML'
 
     start = time()
     bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg)
 
     bsa.artifact_removal(methods, save_epochs = False)
-    bsa.feature_extraction(methods, save_feat = True)#,
+    bsa.feature_extraction(methods, save_feat = False)#, epoch_file = 'main/preproc/BCI3net_trial_epo.fif')#
         # epoch_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/preproc/BCI3_ssp_car_ica_3_P3_epo.fif')
-    # bsa.classifier(methods, save_model = False)#,
+    scores = bsa.classifier(methods, save_model = False)#,
     #     feat_file = '/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/feature_extraction/Train_locl_ssp_car_ica_TF_EEGnet_CNN_[3]_1.npz')
     print(f"Overall time: {time() - start}")
