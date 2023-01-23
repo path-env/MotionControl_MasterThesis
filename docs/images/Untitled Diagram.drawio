@@ -1,1 +1,70 @@
-<mxfile host="app.diagrams.net" modified="2023-01-23T20:15:03.546Z" agent="5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" version="20.8.10" etag="E1TgME5nDVOZJG_uaVKz" type="github"><diagram name="Page-1" id="FIsLYuHzlU_XFJ1SP3E0">UzV2zq1wL0osyPDNT0nNUTV2VTV2LsrPL4GwciucU3NyVI0MMlNUjV1UjYwMgFjVyA2HrCFY1qAgsSg1rwSLBiADYTaQg2Y1AA==</diagram></mxfile>
+<mxfile host="app.diagrams.net" modified="2023-01-23T21:34:41.236Z" agent="5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" etag="SZuA8lWv2O9BUGMWQFRK" version="20.8.10" type="github">
+  <diagram name="Page-1" id="FIsLYuHzlU_XFJ1SP3E0">
+    <mxGraphModel dx="1257" dy="661" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-2" value="" style="shape=mxgraph.signs.healthcare.brain;html=1;pointerEvents=1;fillColor=#000000;strokeColor=none;verticalLabelPosition=bottom;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="180" width="98" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-4" value="" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/phosphor-duotone-vol-5/256/wave-sine-duotone-128.png" vertex="1" parent="1">
+          <mxGeometry x="61.5" y="240" width="75" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-8" value="" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://th.bing.com/th/id/OIP.oR23gtayus8NnhMo5mmxAAHaIy?pid=ImgDet&amp;rs=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="120" width="52.87" height="62.62" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-9" value="" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://www.bci2000.org/mediawiki/images/thumb/1/16/Cyton-Daisy.jpg/500px-Cyton-Daisy.jpg;" vertex="1" parent="1">
+          <mxGeometry x="160" y="200" width="60" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-10" value="" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://raw.githubusercontent.com/OpenBCI/Docs/master/assets/images/dongleConnection.png;clipPath=inset(27.88% 33.33% 27.88% 33.33%);" vertex="1" parent="1">
+          <mxGeometry x="280" y="197.5" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-34" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontSize=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=-0.046;entryY=0.519;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="zBlL3TUO0Pgipew5Sboh-9" target="zBlL3TUO0Pgipew5Sboh-10">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="380" y="280" as="sourcePoint" />
+            <mxPoint x="430" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-36" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="360" y="130" width="480" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-17" value="" style="whiteSpace=wrap;html=1;fontSize=2;fillColor=none;sketch=0;strokeWidth=1;gradientColor=none;gradientDirection=south;strokeColor=default;labelPosition=center;verticalLabelPosition=bottom;align=center;verticalAlign=top;fontFamily=Helvetica;fontStyle=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;connectable=1;" vertex="1" parent="zBlL3TUO0Pgipew5Sboh-36">
+          <mxGeometry y="2.842170943040401e-14" width="475" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-18" value="" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;sketch=0;strokeColor=default;strokeWidth=1;fontSize=2;fillColor=none;gradientColor=none;gradientDirection=south;image=https://i.ytimg.com/vi/XXdEvDP4uck/maxresdefault.jpg;" vertex="1" parent="zBlL3TUO0Pgipew5Sboh-36">
+          <mxGeometry x="305" y="5.684341886080802e-14" width="170" height="95.79" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-11" value="" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://www.researchgate.net/profile/Benjamin_Estermann/publication/327797416/figure/download/fig7/AS:673281875124226@1537534316149/Overview-of-the-OpenBCI-GUI.ppm;" vertex="1" parent="zBlL3TUO0Pgipew5Sboh-36">
+          <mxGeometry y="2.842170943040401e-14" width="184.16" height="89.6" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-19" value="" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;sketch=0;strokeColor=default;strokeWidth=1;fontSize=2;fillColor=none;gradientColor=none;gradientDirection=south;image=https://th.bing.com/th/id/OIP.Va9iuQ0gZJgYRTaF0SoSQgAAAA?pid=ImgDet&amp;rs=1;" vertex="1" parent="zBlL3TUO0Pgipew5Sboh-36">
+          <mxGeometry x="421.59000000000003" width="53.41" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fontSize=2;" edge="1" parent="zBlL3TUO0Pgipew5Sboh-36" source="zBlL3TUO0Pgipew5Sboh-25" target="zBlL3TUO0Pgipew5Sboh-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-25" value="" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;sketch=0;strokeColor=default;strokeWidth=1;fontSize=2;fillColor=none;gradientColor=none;gradientDirection=south;" vertex="1" parent="zBlL3TUO0Pgipew5Sboh-36">
+          <mxGeometry x="184.15999999999997" y="139.60000000000002" width="110" height="82.5" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-20" value="" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;sketch=0;strokeColor=default;strokeWidth=1;fontSize=2;fillColor=none;gradientColor=none;gradientDirection=south;image=https://dscl.lcsr.jhu.edu/wp-content/uploads/2017/10/ros_logo.jpeg;" vertex="1" parent="zBlL3TUO0Pgipew5Sboh-36">
+          <mxGeometry x="211.70999999999992" y="147.10000000000002" width="58.29" height="15.36" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=2;" edge="1" parent="zBlL3TUO0Pgipew5Sboh-36" source="zBlL3TUO0Pgipew5Sboh-22" target="zBlL3TUO0Pgipew5Sboh-25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-21" value="" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/business-startup-10/50/69-128.png;sketch=0;strokeColor=default;strokeWidth=1;fontSize=2;fillColor=none;gradientColor=none;gradientDirection=south;" vertex="1" parent="zBlL3TUO0Pgipew5Sboh-36">
+          <mxGeometry x="211.71000000000004" y="169.60000000000002" width="50" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-22" value="" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;sketch=0;strokeColor=default;strokeWidth=1;fontSize=2;fillColor=none;gradientColor=none;gradientDirection=south;image=https://live.staticflickr.com/65535/50910162901_86602ce394_o.jpg;" vertex="1" parent="zBlL3TUO0Pgipew5Sboh-36">
+          <mxGeometry x="65.26999999999998" y="119.60000000000002" width="53.61" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=2;" edge="1" parent="zBlL3TUO0Pgipew5Sboh-36" source="zBlL3TUO0Pgipew5Sboh-11" target="zBlL3TUO0Pgipew5Sboh-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-33" value="" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;sketch=0;strokeColor=default;strokeWidth=1;fontSize=2;fillColor=none;gradientColor=none;gradientDirection=south;image=https://dscl.lcsr.jhu.edu/wp-content/uploads/2017/10/ros_logo.jpeg;" vertex="1" parent="zBlL3TUO0Pgipew5Sboh-36">
+          <mxGeometry x="305" y="2.842170943040401e-14" width="36.44" height="9.6" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
