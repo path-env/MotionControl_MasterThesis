@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-01-24T08:20:29.797Z" agent="5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" etag="BoraVWIKrls7ONxKVoQS" version="20.8.10" type="github">
+<mxfile host="app.diagrams.net" modified="2023-01-24T08:22:28.801Z" agent="5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" etag="2VS8vmgCRO9YcxPdfPsJ" version="20.8.10" type="github">
   <diagram name="Page-1" id="FIsLYuHzlU_XFJ1SP3E0">
-    <mxGraphModel dx="1674" dy="731" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1434" dy="731" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -80,11 +80,11 @@
         <mxCell id="zBlL3TUO0Pgipew5Sboh-38" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;Work Station&lt;/font&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontFamily=Helvetica;" parent="1" vertex="1">
           <mxGeometry x="540" y="360" width="130" height="10" as="geometry" />
         </mxCell>
-        <mxCell id="zBlL3TUO0Pgipew5Sboh-39" value="&lt;p style=&quot;text-align: justify;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;Measurements from OpenBCI headgear&lt;/font&gt;&lt;/span&gt;&lt;/p&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontFamily=Helvetica;" parent="1" vertex="1">
+        <mxCell id="zBlL3TUO0Pgipew5Sboh-39" value="&lt;p style=&quot;line-height: 30%;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;Measurements from OpenBCI headgear&lt;/font&gt;&lt;/span&gt;&lt;/p&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontFamily=Helvetica;" parent="1" vertex="1">
           <mxGeometry x="34" y="300" width="130" height="10" as="geometry" />
         </mxCell>
-        <mxCell id="8Qqn8H0FfDL8_Zrk-DWg-2" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;Serial communication&lt;/font&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontFamily=Helvetica;" vertex="1" parent="1">
-          <mxGeometry x="190" y="280" width="130" height="10" as="geometry" />
+        <mxCell id="8Qqn8H0FfDL8_Zrk-DWg-2" value="&lt;p style=&quot;line-height: 20%;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;Serial &lt;br&gt;communication&lt;/font&gt;&lt;/p&gt;" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="190" y="250" width="130" height="10" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
