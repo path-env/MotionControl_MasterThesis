@@ -176,8 +176,9 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
         history['val_loss'].append(valid_loss)
 
         epoch_end = time.time()
-        print(f"Epoch : {epoch+1}|{epochs}, Training: Loss: {avg_train_loss:.3f}, Accuracy: {acc_train*100:.3f}%, \n\r\t\tValidation: Loss : {avg_valid_loss:.3f}, Accuracy: {acc_val*100:.3f}%, Time: {epoch_end-epoch_start:.4f}",end='\r')
-        print(' ')
+        if epoch%100 == 0:
+            print(f"Epoch : {epoch+1}|{epochs}, Training: Loss: {avg_train_loss:.3f}, Accuracy: {acc_train*100:.3f}%, \n\r\t\tValidation: Loss : {avg_valid_loss:.3f}, Accuracy: {acc_val*100:.3f}%, Time: {epoch_end-epoch_start:.4f}",end='\r')
+            print(' ')
         if opt_trial != False:
             opt_trial.report(train_acc, epoch)
 

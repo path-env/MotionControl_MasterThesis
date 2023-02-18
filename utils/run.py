@@ -63,9 +63,9 @@ def run(filename = 'dummy.npz', nCfg = EEGNetParams(), dCfg = PhysionetParams())
             F1, D = 12,4
             F2 = 50
             model =  EEGnet(n_classes = n_classes, n_chan = n_chan, n_T = n_T,
-                    sf = dCfg.sfreq, dt = 0.7, F1 =F1, F2 = F2, D =D)
+                    sf = dCfg.sfreq, dt = 0.5, F1 =F1, F2 = F2, D =D)
         elif nCfg.name =='ATTNnet':
-            model = ATTNnet(n_classes, n_s, cCh, n_chan, n_T, n_layers = 3, dt = 0.2, nCfg=ATTNnetParams())
+            model = ATTNnet(n_classes, n_s, cCh, n_chan, n_T, n_layers = 3, dt = 0.55, nCfg=ATTNnetParams())
         elif nCfg.name =='CasCnnRnnnet':
             model = CasCnnRnnnet(n_classes, n_seg = cCh, n_row_img = n_chan, n_row_col= n_T, n_layers = 3, dt = 0.55)
 
@@ -124,5 +124,7 @@ def run(filename = 'dummy.npz', nCfg = EEGNetParams(), dCfg = PhysionetParams())
     return acc_test, f1_test, roc_test, cf_val
 
 if __name__ =='__main__':
-    run('OCIParams_locl_car_RAWnorm.npz')
-    # run('Physionet_locl_car_RAW.npz')
+    nCfg = EEGNetParams()
+    dCfg = OCIParams()
+    run('OCIParams_locl_car_RAWnorm.npz', nCfg, dCfg)
+    # run('Physionet_16locl_ssp_car_ica_RAW_[3, 4, 7, 8, 11, 12]_1.npz', nCfg, dCfg)

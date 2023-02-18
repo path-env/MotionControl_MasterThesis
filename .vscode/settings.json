@@ -96,5 +96,6 @@
     "../../../../../../opt/ros/noetic/lib/python3/dist-packages",
     "./main"
 ],
-"cmake.configureOnOpen": false
+"cmake.configureOnOpen": false,
+"ros.distro": "noetic"
 }

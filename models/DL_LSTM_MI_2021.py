@@ -6,10 +6,12 @@ class CasCnnRnnnet(nn.Module):
     def __init__(self, n_class, n_seg, n_row_img, n_row_col ,n_layers = 2, dt = 0.379) -> None:
         super(CasCnnRnnnet, self).__init__()
         self.hid_size = 300
+        if (n_class) == 2:
+            n_class = 1
+        self.n_classes = n_class
         self.spac_feat = (n_row_img*n_row_col)*3
         self.temp_feat = 10
         self.num_layers = n_layers
-        self.n_classes = n_class
         self.n_seg = n_seg
 
         self.spac = nn.Sequential(
@@ -29,7 +31,8 @@ class CasCnnRnnnet(nn.Module):
         self.lstm = nn.LSTM(input_size = self.spac_feat , hidden_size = self.hid_size, 
                 num_layers = self.num_layers, batch_first = True, dropout= dt)
 
-        self.fc2 = nn.Linear(self.hid_size, self.n_classes)
+        self.fc1 = nn.Linear(self.hid_size, self.hid_size)
+        self.fc2 = nn.Linear(n_seg, n_class)
 
     def forward(self, x):
         # x IMG data: bs x n_seg x step x *IMG
@@ -39,7 +42,10 @@ class CasCnnRnnnet(nn.Module):
         
         sp_feat = torch.stack(sp_feat)
         sp_feat = torch.transpose(sp_feat,0,1)
-        x, h = self.lstm(sp_feat)
-        x = x[:,-1,:]
-        x = nn.functional.relu(self.fc2(x))
+        out, h = self.lstm(sp_feat)
+        # x = x[:,-1,:]
+        u = torch.tanh(self.fc1(out))
+        a = torch.softmax(u, dim =2)
+        v = torch.sum(a*out, 2)
+        x = nn.functional.relu(self.fc2(v))
         return x
