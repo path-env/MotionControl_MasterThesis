@@ -44,7 +44,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 # torch.manual_seed(42)
 # torch.cuda.manual_seed_all(42)
 
-from sklearn.model_selection import ShuffleSplit
+from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import cross_val_score, cross_validate
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
@@ -60,7 +60,7 @@ from models.EEGNet_2018 import EEGnet
 from utils.train_net import train_and_validate
 
 class BrainSignalAnalysis():
-    def __init__(self, raw, data_cfg = OCIParams(), analy_cfg = globalTrial(), net_cfg = EEGNetParams()) -> None:
+    def __init__(self, raw, data_cfg , analy_cfg , net_cfg) -> None:
         self.dCfg = data_cfg
         self.aCfg = analy_cfg
         self.nCfg = net_cfg
@@ -330,7 +330,7 @@ class BrainSignalAnalysis():
                 features = []
                 for ch in range(n_ch):
                     ch_feat = []
-                    seg_size = ((int(window_size//2)))*2 + 8
+                    seg_size = ((int(window_size//2)))*2 + 7
                     for t in range(0,n_T, int(window_size//2)):
                         seg = epoch_data[ep,ch,t:t+window_size]
                         if len(seg)>1:
@@ -349,15 +349,11 @@ class BrainSignalAnalysis():
                             # p2p
                             P = np.max(seg) -np.min(seg)#, axis =2) - np.min(seg, axis =2)
                             # Amp spectral den
-                            Psd = signal.periodogram(seg)[1]#, axis =2)
-                            Asd = np.sqrt(Psd)
-                            Psd = ((Psd - Psd.min()) / (Psd.max() - Psd.min()).tolist())[1:]
-                            Asd = ((Asd - Asd.min()) / (Asd.max() - Asd.min()).tolist())[1:]
-                            # power 
-                        # power 
-                            # power 
-                        # power 
-                            # power 
+                            Psd = signal.periodogram(seg)[1].tolist()[1:]#, axis =2)
+                            Asd = np.sqrt(Psd)[1:]
+                            # Psd = ((Psd - Psd.min()) / (Psd.max() - Psd.min()).tolist())[1:]
+                            # Asd = ((Asd - Asd.min()) / (Asd.max() - Asd.min()).tolist())[1:]
+
                             PFB = np.trapz(Psd)#, axis=2)
                         
                             seg = [M,V,S,K,Z,A,P,*Psd,*Asd,PFB]
@@ -371,13 +367,11 @@ class BrainSignalAnalysis():
             n_s,n_ch,n_seg,n_f = self.features.shape
             # Feature Normalisation acrosss channels for spatial info
             for ep in range(n_s):
-                for ch in range(n_ch):
+                for s in range(n_seg):
                     for f in range(n_f):
-                        self.features[ep,ch,:,f] = (self.features[ep,ch,:,f] - self.features[ep,ch,:,f].min(axis=-1)) / (self.features[ep,ch,:,f].max(axis=-1) - self.features[ep,ch,:,f].min(axis=-1))
+                        self.features[ep,:,s,f] = (self.features[ep,:,s,f] - self.features[ep,:,s,f].min(axis=-1)) / (self.features[ep,:,s,f].max(axis=-1) - self.features[ep,:,s,f].min(axis=-1))
 
         if method.find('_IMG')!=-1:
-            # nchan = 16
-           
             map = np.zeros((7,8))
             positions = [[0,3], [0,4], [1,2], [1,5], 
                     [2,1],[2,6],[3,0],[3,2], [3, 5], [6,7],
@@ -475,7 +469,7 @@ class BrainSignalAnalysis():
                 torch.save(model, f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_modified.pt'}")
 
         if method.find('_ML')!=-1:
-            cv = ShuffleSplit(10, test_size = 0.2, random_state = None)
+            cv = StratifiedShuffleSplit(10, test_size = 0.2, random_state = None)
             # cv_split = cv.split(self.epochs.get_data(), self.train_y)
             # rbf = RBFSampler(gamma=1, random_state=1)
             # self.features = rbf.fit_transform(self.features)
@@ -489,7 +483,7 @@ class BrainSignalAnalysis():
             scores = cross_validate(pipe, self.features, self.labels, cv=cv, scoring={'f1':'f1_macro', 'acc':'accuracy', 
                     'roc': make_scorer(roc_auc_score,multi_class='ovr',average="macro",needs_proba=True)}, verbose=False, return_estimator=False)
             class_balance = np.mean(self.labels == self.labels[0])
-            class_balance = max(class_balance, 1. - class_balance)
+            class_balance = min(class_balance, 1. - class_balance)
             print(f"Classification accuracy: {np.mean(scores['test_acc'])} / Chance level: {class_balance}")
             return scores                          
 
@@ -497,17 +491,17 @@ if __name__ =='__main__':
     runs = [5, 6, 9, 10, 13, 14] #[3, 4, 7, 8, 11, 12]
     person_id = 1
     # raw = extractBCI3(runs , person_id)
-    raw = extractPhysionet(runs, person_id)
-    data_cfg = PhysionetParams()
-    # raw = extractOCI([], [], Expr_name = 'P2_Day9_125')
+    # raw = extractPhysionet(runs, person_id)
+    data_cfg = OCIParams()
+    raw = extractOCI([], [], Expr_name = 'P2_Day4_125')
     analy_cfg = globalTrial()
     net_cfg = EEGNetParams()
-    # artifact_removal_methods =  'locl_ssp_car_ica'
+    artifact_removal_methods =  'locl_ssp_car_ica'
     # feat_extract_methods = artifact_removal_methods+'_TF'
     # classi_methods = feat_extract_methods+'_CNN'
     
     # methods = 'locl_IMG_EEGnet_CNN'
-    methods = f'locl_car_ssp_ica_STATnorm_SVC_ML'
+    methods = f'locl_car_ssp_ica_CSP_SVC_ML'
 
     start = time()
     bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg)
