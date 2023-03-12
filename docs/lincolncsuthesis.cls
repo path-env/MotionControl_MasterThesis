@@ -148,7 +148,7 @@ citestyle=numeric
 \newcommand{\thesisDegree}[1]{\xdef\@degree{#1}}
 \lxdef \@programme      {Embedded systems for Mechatronics}
 \newcommand{\thesisProgramme}[1]{\xdef\@programme{#1}}
-\lxdef \@schoolname     {School of Inforamtics}
+\lxdef \@schoolname     {School of Information Technology}
 \newcommand{\thesisSchool}[1]{\xdef\@schoolname{#1}}
 \lxdef \@universityname {Dortmund University of Applied Sciences and Arts}
 \newcommand{\thesisUniversity}[1]{\xdef\@universityname{#1}}
@@ -326,7 +326,6 @@ citestyle=numeric
 
 
 
-
 % TITLE PAGE
 % -------------
 
@@ -334,7 +333,7 @@ citestyle=numeric
 % Print out submission text
 \newcommand{\submissionStatement}{
     \setstretch{1.25}
-    \@ifundefined{@submissiontext}{Submitted in partial satisfaction of the requirements for the \\Degree of \@degree \\ in \@programme}{\@submissiontext}
+    \@ifundefined{@submissiontext}{submitted as Master’s thesis for the degree of \\ \@degree \\ in \@programme}{\@submissiontext}
 }
 
 % Command to override thesis submission text

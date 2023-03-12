@@ -1,7 +1,30 @@
-\section*{Introduction}
 
 \section{Challenges}
+\subsection{Hardware setup}
+The process of 3D printing the Ultracortex Mark IV headgear with the help of small printers was not possible. Several unsuccessful attempts due to technical or stationery issues, led to delay and wastage of material, hence 3D printing of the headgear was outsourced. 
+
+Achieving a good contact of electrodes over the scalp was difficult in the beginning of each experiment, hence the electrodes had to be manually adjusted until a reliable measurement is achieved. 
+
+During experiments, the presence of electronic equipment causes noise around 25 Hz, as shown in the plots earlier. This was impossible to be avoid. Few data recordings and experiments had to continue with the noise present in it.
+
+\subsection{Dataset}
+Before the use of OpenBCI hardware, the BCI signal processing pipeline had to be developed. In order to construct and test it, a good dataset which matches this task was required. To my knowledge only two public datasets were available with limited trials and experiments, restricting training and validation of the deep learning models.
+
+The CARLA environment provides a good platform for testing, but not very flexible for sample-based data collection. Hence a similar experiment had to be setup to mimic the steering action for data collection. Finally while controlling the car, the data from the OpenBCI headgear had to be epoched for the same duration as the experiment, leading to lag in the steering control.
+
+\subsection{BCI system setup}
+Setting up a configurable BCI signal processing pipeline for different methods and algorithm was quite challenging. However it had to be implemented for the ease in result comparison and analysis.
+
+\section{Future scope}
+The noise removal from the recorded brain signal can be enhanced, improving the overall reliability of the system.
+
+The system developed and the algorithms used are modular and can be extended to include new methods for feature extraction, artifact removal or classification. The classifiers used can be replaced with regression models to decode the correct steering angle in order to achieve smooth turns at curves and junctions. 
+
+The information from sensors fitted in the simulated car can be fused with a command from the BCI system to achieve a smooth and collision free steering. The BCI system can be integrated with a Simultaneous Localization and Mapping (SLAM) system, that provides free space for the vehicle to travel and the BCI command can be used steer the vehicle in the obtained map without any collision.
+
+The system can be tweaked to control other wheeled robots or manipulators to perform specific actions in a configuration space. It can be deployed to wheeled chairs to achieve very similar simplistic control. It finds numerous application in devices assisting people with motor disabilities or to treat patients to improve their motor functions.
+
+A different system of data collection for training the BCI system would help to achieve better data for training, hence better results.
 
 \section{Conclusion}
-
-\section*{Summary}
+The comparative analysis provided deep insights on various conventional and deep learning methods, helping to choose the best combination of preprocessing, feature extraction and classification methods.Hence the steering actions could be achieved to an acceptable level for a simulated car in the CARLA environment using the motor intent from the brain signal. 
