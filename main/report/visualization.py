@@ -5,8 +5,8 @@ import pandas as pd
 import plotly.express as px
 
 # read report
-ML_data = np.load('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/main/report/ML_results.npz', allow_pickle= True)
-DL_data = np.load('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/DL_results.npz', allow_pickle= True)
+ML_data = np.load('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/ML_results_P2_Day4_125.npz', allow_pickle= True)
+DL_data = np.load('/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/DL_results_P2_Day4_125.npz', allow_pickle= True)
 
 ML_data = ML_data['arr_0'][0]
 
@@ -20,6 +20,14 @@ DL_df = pd.DataFrame(DL_data)
 
 # df = df[df['dataset']=='OCIParams']
 df = pd.concat([ML_df,DL_df])
+
+df.rename(columns = {'fit_time':'Fit_Time', 'test_f1':'Test_F1','test_acc':'Test_Accuracy',
+'test_roc':'Test_ROC','cv_time':'CV_Time','preproc':'Preprocessing','features':'Features',
+'clasfier':'Classifier','Feat+Clf':'Feature_Classifier_combined','dataset':'Dataset'}, inplace = True)
+
+# Find mean over several runs
+df.sort_values('Test_F1', ascending=False).drop_duplicates(['Preprocessing', 'Feature_Classifier_combined', 'Features','Classifier']).sort_index()
+
 #%%
 fig = px.box(df, x="preproc", y="test_acc", color="Feat+Clf", notched=False)
 fig.update_traces(quartilemethod="exclusive") # or "inclusive", or "linear" by default

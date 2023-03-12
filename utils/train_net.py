@@ -186,8 +186,8 @@ def train_and_validate(data, model, loss_fn, optim, LRscheduler, tb, dCfg, nCfg,
                 raise optuna.exceptions.TrialPruned()
 
     # Test Loop
-    if nCfg.test_split !=0.0:
-        tb,_ = test_net(model, test_loader, tb, dCfg)
+    # if nCfg.test_split !=0.0:
+    #     tb, acc_test, f1_test, roc_test, cf_val = test_net(model, test_loader, tb, dCfg)
 
     # tb.add_pr_curve('PRcurve_train',overall_label_train,overall_predic_train)
     # tb.add_pr_curve('PRcurve_val',overall_label_val,overall_predic_val)
@@ -234,14 +234,14 @@ def test_net(model, test_loader, tb, dCfg):
     acc_test  = metrics.accuracy_score(overall_label_test, overall_predic_test)
     roc_test = metrics.roc_auc_score(overall_label_test, prob_test, average='macro', 
         multi_class = 'ovr')
-    cf_val = metrics.multilabel_confusion_matrix(overall_label_test, overall_predic_test)
+    cf_test = metrics.multilabel_confusion_matrix(overall_label_test, overall_predic_test)
 
     tb.add_scalar('f1_test',f1_test,i)
     tb.add_scalar('acc_test',acc_test,i)
     tb.add_scalar('prec_test',prec_test,i)
     tb.add_scalar('recl_test',recl_test,i)
     # tb.add_scalar('roc_test',roc_test,i)
-    return tb, acc_test, f1_test, roc_test, cf_val
+    return tb, acc_test, f1_test, roc_test, cf_test
 
 #%%
 if __name__ == "__main__":

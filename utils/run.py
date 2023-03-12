@@ -63,7 +63,7 @@ def run(filename = 'dummy.npz', nCfg = EEGNetParams(), dCfg = PhysionetParams())
             F1, D = 12,4
             F2 = 50
             model =  EEGnet(n_classes = n_classes, n_chan = n_chan, n_T = n_T,
-                    sf = dCfg.sfreq, dt = 0.5, F1 =F1, F2 = F2, D =D)
+                    sf = dCfg.sfreq, dt = 0.7, F1 =F1, F2 = F2, D =D)
         elif nCfg.name =='ATTNnet':
             model = ATTNnet(n_classes, n_s, cCh, n_chan, n_T, n_layers = 3, dt = 0.55, nCfg=ATTNnetParams())
         elif nCfg.name =='CasCnnRnnnet':
@@ -83,7 +83,7 @@ def run(filename = 'dummy.npz', nCfg = EEGNetParams(), dCfg = PhysionetParams())
         # lambda1 = lambda epoch: 0.1 ** epoch
         LRscheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size= nCfg.step_size, gamma=nCfg.gamma)
 
-        acc_train, acc_val, f1_train, f1_val, roc = train_and_validate(data,model,loss,optimizer, LRscheduler,
+        acc_train, acc_val, f1_train, f1_val, _ = train_and_validate(data,model,loss,optimizer, LRscheduler,
                                                                     tb , dCfg, nCfg,epochs = nCfg.epochs)
 
 
@@ -103,7 +103,8 @@ def run(filename = 'dummy.npz', nCfg = EEGNetParams(), dCfg = PhysionetParams())
             print('Saving the model.....')
             torch.save(model,f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()+'_carla.pt'}")
             # model_scripted = torch.jit.script(model) # Export to TorchScript
-            # torch.save(model,'/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/trial.pt' )
+            # torch.save(model,'/media/mangaldeep/HDD2/workspace
+            # /MotionControl_MasterThesis/models/trial.pt' )
             # model_scripted.save(f"/media/mangaldeep/HDD2/workspace/MotionControl_MasterThesis/models/{model._get_name()}_md_script.pt") 
 
         # Testing 
@@ -113,7 +114,7 @@ def run(filename = 'dummy.npz', nCfg = EEGNetParams(), dCfg = PhysionetParams())
         
         datacont = DataContainer(test_x, test_y)
         test_loader = DataLoader(datacont, batch_size=1, pin_memory=True, num_workers= nCfg.num_wrkrs)
-        _, acc_test, f1_test, roc_test, cf_val = test_net(model, test_loader, tb, dCfg)
+        _, acc_test, f1_test, roc_test, cf_test = test_net(model, test_loader, tb, dCfg)
         print(f'Test F1 Score : {f1_test:.3f}\n')
         testcrossval.append(f1_test)
     
@@ -121,10 +122,10 @@ def run(filename = 'dummy.npz', nCfg = EEGNetParams(), dCfg = PhysionetParams())
     print(f"Training  : Accuracy : {np.mean(traincrossvalacc):.3f}, F1 Score : {np.mean(traincrossvalf1):.3f}")
     print(f"Validation: Accuracy : {np.mean(valcrossvalacc):.3f}, F1 Score : {np.mean(valcrossvalf1):.3f}")
     print(f"Tests: {np.mean(testcrossval)}")
-    return acc_test, f1_test, roc_test, cf_val
+    return acc_val, f1_val, roc_test, cf_test
 
 if __name__ =='__main__':
     nCfg = EEGNetParams()
     dCfg = OCIParams()
-    run('OCIParams_locl_car_RAWnorm.npz', nCfg, dCfg)
+    run('OCIParams_OCIParams_locl_norm_ica_TF.npz', nCfg, dCfg)
     # run('Physionet_16locl_ssp_car_ica_RAW_[3, 4, 7, 8, 11, 12]_1.npz', nCfg, dCfg)

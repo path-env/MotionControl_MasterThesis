@@ -501,7 +501,7 @@ if __name__ =='__main__':
     # classi_methods = feat_extract_methods+'_CNN'
     
     # methods = 'locl_IMG_EEGnet_CNN'
-    methods = f'locl_car_ssp_ica_CSP_SVC_ML'
+    methods = f'locl_ssp_ica_CSP_SVC_ML'
 
     start = time()
     bsa = BrainSignalAnalysis(raw,data_cfg, analy_cfg, net_cfg)

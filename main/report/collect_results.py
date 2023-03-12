@@ -1,7 +1,7 @@
 import time
 import numpy as np
 
-from data.params import OCIParams, BCI3Params, PhysionetParams
+from data.params import OCIParams, BCI3Params, PhysionetParams, globalTrial
 from data.params import EEGNetParams, ATTNnetParams, CasCnnRnnnetParams
 
 from utils import run
@@ -16,15 +16,17 @@ from models.DL_LSTM_MI_2021 import CasCnnRnnnet
 
 
 def ML_methods():
+    expr = 'P2_Day4_125'
     try:
         Results = []
         # take a dataset 
         oci_cfg = OCIParams()
         bbci_cfg = BCI3Params()
         phy_cfg = PhysionetParams()
+        analy_cfg = globalTrial()
         overall = []
         ANS = {}
-        dataset= [bbci_cfg,oci_cfg, phy_cfg]
+        dataset= [oci_cfg]
 
         ANS['fit_time'] = []
         ANS['score_time'] = []
@@ -49,9 +51,9 @@ def ML_methods():
             elif ds.name == 'BCI3IVa':
                 raw = extractBCI3( )
             elif ds.name == 'OCIParams':
-                raw = extractOCI(Expr_name = 'P2_Day11_125')
+                raw = extractOCI(Expr_name = expr)
             
-            bsa = BrainSignalAnalysis(raw, data_cfg = ds)
+            # bsa = BrainSignalAnalysis(raw, data_cfg = ds)
             # take a preprocessing step
             procs = ['ica', 'ssp', 'car', 'car_ica', 'ssp_car', 'ssp_car_ica', 'ssp_ica']
             for proc in procs:
@@ -68,10 +70,10 @@ def ML_methods():
                         ans = {'fit_time':[], 'score_time':[], 'test_f1':[], 
                         'test_acc':[], 'test_roc':[], 'cv_time':[]}
                         # repeat every experiment 10 times to get the variation
-                        cv = 2
+                        cv = 5
                         for i in range(cv):
                             start = time.time()
-                            bsa = BrainSignalAnalysis(raw, data_cfg = ds)
+                            bsa = BrainSignalAnalysis(raw, data_cfg = ds, analy_cfg=analy_cfg, net_cfg=None)
                             bsa.artifact_removal(methods, save_epochs = False)
                             bsa.feature_extraction(methods, save_feat = False)
                             scores = bsa.classifier(methods, save_model = False)
@@ -105,10 +107,11 @@ def ML_methods():
                         # overall.extend(ANS)
                             # ans[methods+str(i)] = scores
     finally:
-        np.savez('ML_results', [ANS])
+        np.savez(f'ML_results_{expr}', [ANS])
 
 
 def DL_methods():
+    expr = 'P2_Day4_125'
     try:
         Results = []
         # take a dataset 
@@ -117,7 +120,7 @@ def DL_methods():
         phy_cfg = PhysionetParams()
         overall = []
         ANS = {}
-        dataset= [bbci_cfg, phy_cfg,oci_cfg]
+        dataset= [oci_cfg]
 
         ANS['fit_time'] = []
         ANS['score_time'] = []
@@ -127,10 +130,10 @@ def DL_methods():
         ANS['cv_time'] = []
         ANS['preproc'] = []
         ANS['features'] = []
-        ANS['clasfier'] = []
+        ANS['classifier'] = []
         ANS['Feat+Clf'] = []
         ANS['dataset'] = []
-
+        analy_cfg = globalTrial()
         # take an algo
         for ds in dataset:
             # algo = [EEGNetParams.name, None]
@@ -140,27 +143,26 @@ def DL_methods():
                 person_id = 1
                 raw = extractPhysionet(runs, person_id)
             elif ds.name == 'BCI3IVa':
-                raw = extractBCI3( ) 
+                raw = extractBCI3( )
             elif ds.name == 'OCIParams':
-                raw = extractOCI(Expr_name = 'P2_Day11_125')
+                raw = extractOCI(Expr_name = expr)
             
-            bsa = BrainSignalAnalysis(raw, data_cfg = ds)
             # take a preprocessing step
             procs = ['ica', 'ssp_car_ica','ssp', 'car',  'car_ica', 'ssp_car', 'ssp_ica']
             for proc in procs:
                 # take a featuure extraction
-                classes = ['_STAT_ATTNnet', '_RAW_EEGnet_CNN', '_TF_EEGnet_CNN'] #'_IMG_CasCnnRnnnet']
+                classes = ['_TF_EEGnet_CNN', '_RAW_EEGnet_CNN', '_STAT_ATTNnet'] #'_IMG_CasCnnRnnnet']
                 for cl in classes:
                     ans = {'fit_time':[], 'score_time':[], 'test_f1':[], 
                     'test_acc':[], 'test_roc':[], 'cv_time':[]}
                     # repeat every experiment 10 times to get the variation
-                    cv = 2
+                    cv = 5
                     for i in range(cv):
                         raw1 = raw.copy()
                         methods = ds.name+'_locl_norm_'+ proc+ cl
                         print(methods)
                         start = time.time()
-                        bsa = BrainSignalAnalysis(raw1, data_cfg = ds)
+                        bsa = BrainSignalAnalysis(raw1, data_cfg = ds, net_cfg= ds, analy_cfg = analy_cfg)
                         bsa.artifact_removal(methods, save_epochs = False)
                         bsa.feature_extraction(methods, save_feat = True)
                         extractf = ds.name+'_'+ '_'.join(methods.split('_')[:-2])+'.npz'
@@ -196,14 +198,16 @@ def DL_methods():
 
                     ANS['preproc'].extend([proc]*cv)
                     ANS['features'].extend(['_'.join(cl.split('_')[1:2])]*cv)
-                    ANS['clasfier'].extend(['_'.join(cl.split('_')[2:])]*cv)
+                    ANS['classifier'].extend(['_'.join(cl.split('_')[2:])]*cv)
                     ANS['Feat+Clf'].extend([cl[1:]]*cv)
                     ANS['dataset'].extend([ds.name]*cv)
 
                     # overall.extend(ANS)
                         # ans[methods+str(i)] = scores
     finally:
-        np.savez('DL_results', [ANS])    
+        np.savez(f'DL_results_{expr}', [ANS])    
+
 
 if __name__ =='__main__':
+    ML_methods()
     DL_methods()

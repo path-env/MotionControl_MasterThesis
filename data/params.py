@@ -14,9 +14,9 @@ class NeuroTechNetParams():
 class EEGNetParams():
     def __init__(self) -> None:
         self.name = 'EEGNet'
-        self.epochs = 100
+        self.epochs = 10
         self.val_split = 0.40
-        self.test_split = 0
+        self.test_split = 0.5
         self.val_bs = 1
         self.train_bs = 1
         self.eeg_sample_count = 240 # How many samples are we training
@@ -25,7 +25,7 @@ class EEGNetParams():
         self.optim_moment= 0.9
         self.num_wrkrs = 3
         self.eeg_sample_length = 226 # Number of eeg data points per sample
-        self.step_size = 50
+        self.step_size = 100
 
 class TFNetParams():
     def __init__(self) -> None:
@@ -52,12 +52,12 @@ class ATTNnetParams():
         self.val_bs = 1
         self.train_bs = 1
         self.eeg_sample_count = 240 # How many samples are we training
-        self.lr = 0.1 # How hard the network will correct its mistakes while learning
+        self.lr = 0.01 # How hard the network will correct its mistakes while learning
         self.gamma = 0.1
         self.optim_moment= 0.9
         self.num_wrkrs = 3
         self.eeg_sample_length = 226 # Number of eeg data points per sample
-        self.step_size = 100
+        self.step_size = 50
 
 class CasCnnRnnnetParams():
     def __init__(self) -> None:
@@ -68,12 +68,12 @@ class CasCnnRnnnetParams():
         self.val_bs = 1
         self.train_bs = 1
         self.eeg_sample_count = 240 # How many samples are we training
-        self.lr = 0.01 # How hard the network will correct its mistakes while learning
+        self.lr = 0.1 # How hard the network will correct its mistakes while learning
         self.gamma = 0.1
         self.optim_moment= 0.9
         self.num_wrkrs = 3
         self.eeg_sample_length = 226 # Number of eeg data points per sample
-        self.step_size = 100
+        self.step_size = 50
 
 ######################################################
 # Data configuration parameters
@@ -113,6 +113,8 @@ class BCI3Params():
         self.tmin, self.tmax =-1,2 #-0.5, 1
         self.feat_tmin, self.feat_tmax = -0.5, 1
         self.test_split = 0.1
+        self.IMG_size = 10
+        self.IMG_ovrlp = 5
 
 #%% OpenBCI Head gear params
 class OCIParams():
@@ -132,6 +134,8 @@ class OCIParams():
         self.tmin, self.tmax = -6,3
         self.feat_tmin, self.feat_tmax = -1,3
         self.test_split = 0.2
+        self.IMG_size = 10
+        self.IMG_ovrlp = 5
 
 
 #%% Analysis configuration Partameters
